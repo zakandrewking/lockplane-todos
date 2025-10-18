@@ -1,29 +1,130 @@
 # Lockplane Todos
 
-A modern, beautiful todo list application built with React and Vite.
+A modern, beautiful todo list application built with React, Vite, and Supabase.
 
 ## Features
 
+- GitHub OAuth authentication
 - Add, complete, and delete todos
 - Filter todos by all, active, or completed
 - Clear all completed todos at once
-- Persistent storage using localStorage
+- Real-time syncing across devices
+- Supabase backend for persistent storage
 - Responsive design that works on mobile and desktop
 - Beautiful gradient UI with smooth animations
 
-## Getting Started
+## Supabase Setup
+
+### 1. Create a Supabase Project
+
+1. Go to [https://supabase.com](https://supabase.com) and sign up
+2. Create a new project
+3. Wait for the project to finish setting up
+
+### 2. Create the Todos Table
+
+In the Supabase SQL Editor, run this query:
+
+```sql
+-- Create todos table
+create table todos (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references auth.users not null,
+  text text not null,
+  completed boolean default false,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Enable Row Level Security
+alter table todos enable row level security;
+
+-- Create policies
+create policy "Users can view their own todos"
+  on todos for select
+  using (auth.uid() = user_id);
+
+create policy "Users can insert their own todos"
+  on todos for insert
+  with check (auth.uid() = user_id);
+
+create policy "Users can update their own todos"
+  on todos for update
+  using (auth.uid() = user_id);
+
+create policy "Users can delete their own todos"
+  on todos for delete
+  using (auth.uid() = user_id);
+
+-- Enable Realtime
+alter publication supabase_realtime add table todos;
+```
+
+### 3. Configure GitHub OAuth
+
+1. Go to [GitHub Developer Settings](https://github.com/settings/developers)
+2. Click "New OAuth App"
+3. Fill in the form:
+   - **Application name:** Lockplane Todos
+   - **Homepage URL:** Your Vercel URL (e.g., `https://lockplane-todos-xxx.vercel.app`)
+   - **Authorization callback URL:** `https://<your-supabase-project>.supabase.co/auth/v1/callback`
+4. Click "Register application"
+5. Copy the **Client ID** and generate a **Client Secret**
+6. In Supabase Dashboard:
+   - Go to Authentication > Providers
+   - Enable GitHub
+   - Paste your Client ID and Client Secret
+   - Save
+
+### 4. Set Environment Variables
+
+1. Copy `.env.example` to `.env`:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Fill in your Supabase credentials in `.env`:
+   ```
+   VITE_SUPABASE_URL=your_supabase_url
+   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+   ```
+
+   You can find these in: Supabase Dashboard > Settings > API
+
+3. For Vercel deployment, add these as environment variables in your project settings
+
+## Local Development
 
 1. Install dependencies:
    ```bash
    npm install
    ```
 
-2. Start the development server:
+2. Set up environment variables (see above)
+
+3. Start the development server:
    ```bash
    npm run dev
    ```
 
-3. Open your browser to the URL shown in the terminal (usually http://localhost:5173)
+4. Open your browser to http://localhost:5173
+
+## Deploy to Vercel
+
+1. Commit your changes:
+   ```bash
+   git add .
+   git commit -m "Add Supabase backend"
+   ```
+
+2. Deploy to production:
+   ```bash
+   vercel --prod
+   ```
+
+3. Add environment variables in Vercel:
+   - Go to your project settings
+   - Add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`
+   - Redeploy
 
 ## Build for Production
 
@@ -32,9 +133,3 @@ npm run build
 ```
 
 The built files will be in the `dist` directory.
-
-## Preview Production Build
-
-```bash
-npm run preview
-```
