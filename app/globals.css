@@ -1,0 +1,253 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.app {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  padding: 40px 20px;
+}
+
+.container {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  width: 100%;
+  max-width: 600px;
+  padding: 40px;
+}
+
+header {
+  margin-bottom: 30px;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+h1 {
+  font-size: 2.5rem;
+  color: #667eea;
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+
+.subtitle {
+  color: #718096;
+  font-size: 1rem;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #718096;
+  font-size: 1.1rem;
+}
+
+.add-todo-form {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.todo-input {
+  flex: 1;
+  padding: 14px 18px;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.2s;
+  outline: none;
+}
+
+.todo-input:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.add-button {
+  padding: 14px 28px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.add-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.add-button:active {
+  transform: translateY(0);
+}
+
+.filters {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 16px;
+}
+
+.filter-btn {
+  padding: 8px 16px;
+  background: transparent;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #718096;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filter-btn:hover {
+  background: #f7fafc;
+  color: #667eea;
+}
+
+.filter-btn.active {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+}
+
+.todo-list {
+  list-style: none;
+  margin-bottom: 20px;
+}
+
+.todo-item {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  background: #f7fafc;
+  transition: all 0.2s;
+  gap: 12px;
+}
+
+.todo-item:hover {
+  background: #edf2f7;
+  transform: translateX(4px);
+}
+
+.todo-item.completed {
+  opacity: 0.6;
+}
+
+.todo-checkbox {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: #667eea;
+}
+
+.todo-text {
+  flex: 1;
+  font-size: 1rem;
+  color: #2d3748;
+}
+
+.todo-item.completed .todo-text {
+  text-decoration: line-through;
+  color: #a0aec0;
+}
+
+.delete-button {
+  width: 32px;
+  height: 32px;
+  background: #fc8181;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.delete-button:hover {
+  background: #f56565;
+  transform: scale(1.1);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #a0aec0;
+  font-style: italic;
+}
+
+.footer {
+  text-align: center;
+  padding-top: 16px;
+  border-top: 2px solid #e2e8f0;
+}
+
+.clear-completed {
+  padding: 10px 20px;
+  background: transparent;
+  color: #fc8181;
+  border: 2px solid #fc8181;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.clear-completed:hover {
+  background: #fc8181;
+  color: white;
+}
+
+@media (max-width: 640px) {
+  .container {
+    padding: 24px;
+  }
+
+  h1 {
+    font-size: 2rem;
+  }
+
+  .filters {
+    flex-direction: column;
+  }
+
+  .filter-btn {
+    width: 100%;
+  }
+
+  .header-content {
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
+  }
+}

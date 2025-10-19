@@ -5,10 +5,10 @@ This file contains project-specific instructions for AI assistants working on Lo
 ## Project Overview
 
 Lockplane Todos is a modern todo list application built with:
-- **Frontend**: React, Vite, TypeScript
-- **Backend**: Supabase (PostgreSQL + Auth + Realtime)
-- **Schema Management**: Lockplane
-- **Authentication**: GitHub OAuth
+- **Framework**: Next.js 15 (App Router)
+- **Language**: TypeScript
+- **Database**: SQLite (better-sqlite3)
+- **Future**: Migrate to hosted SQLite (Turso) or Postgres for production
 
 ## 🚨 COMPLETE WORKFLOW CHECKLIST 🚨
 
@@ -64,35 +64,18 @@ Lockplane Todos is a modern todo list application built with:
 
 **REMEMBER: Code changes without builds, documentation updates, and git commits are incomplete work!**
 
-## Schema Management with Lockplane
+## Database Schema
 
-**IMPORTANT**: This project uses [Lockplane](https://lockplane.com) for database schema management.
+The database schema is currently defined manually in `lib/db.ts` using SQLite.
 
-### Never Manually Create Tables
+### Future: Lockplane Integration
 
-- **DO NOT** write raw SQL migrations
-- **DO NOT** manually create tables in Supabase SQL Editor
-- **DO** define schema changes in `schema/*.json` files
-- **DO** use `lockplane migrate` to apply changes
+This project plans to use [Lockplane](https://lockplane.com) for database schema management when migrating to a hosted database (Postgres or hosted SQLite like Turso).
 
-### Making Schema Changes
-
-1. Edit or create a JSON schema file in `schema/`
-2. Run `lockplane migrate` to generate and apply migrations
-3. Commit both the schema JSON and generated migration files
-
-Example:
-```bash
-# Edit schema
-vim schema/todos.json
-
-# Apply changes
-lockplane migrate
-
-# Commit everything
-git add schema/ migrations/
-git commit -m "Update todos schema"
-```
+For now:
+- Schema is initialized in `lib/db.ts`
+- Schema definition exists in `schema/todos.json` for future migration
+- When ready to migrate, use Lockplane to apply the schema
 
 ## Development Workflow
 
@@ -112,13 +95,11 @@ The checklist ensures:
 # Install dependencies
 npm install
 
-# Set up environment variables
-cp .env.example .env
-# Edit .env with your Supabase credentials
-
-# Start dev server
+# Start dev server (SQLite database will be created automatically)
 npm run dev
 ```
+
+The application will be available at http://localhost:3000
 
 ### Testing & Building
 
@@ -151,15 +132,17 @@ npm run format
 npm run lint
 ```
 
-## Supabase Setup
+## Database
 
-This app requires:
-- A Supabase project with GitHub OAuth configured
-- Environment variables set in `.env`:
-  - `VITE_SUPABASE_URL`
-  - `VITE_SUPABASE_ANON_KEY`
+This app uses SQLite for local development:
+- Database file: `todos.db` (auto-created)
+- Schema: See `lib/db.ts` for table definitions
+- ORM: better-sqlite3 for synchronous SQLite access
 
-Schema is managed via Lockplane - see `schema/todos.json`
+For production deployment on Vercel, consider migrating to:
+- **Turso** (hosted SQLite, serverless)
+- **Vercel Postgres** (PostgreSQL)
+- **Neon** (PostgreSQL)
 
 ## Git Workflow
 
@@ -171,16 +154,16 @@ Schema is managed via Lockplane - see `schema/todos.json`
 
 ## Code Organization
 
-- `src/` - React application source code
-  - `src/components/` - React components
-  - `src/lib/` - Utility libraries (Supabase client, etc.)
-  - `src/App.tsx` - Main application component
-  - `src/main.tsx` - Application entry point
-- `schema/` - Database schema definitions (Lockplane)
-- `migrations/` - Generated SQL migrations (Lockplane)
+- `app/` - Next.js app directory (App Router)
+  - `app/api/todos/` - API routes for CRUD operations
+  - `app/globals.css` - Global styles
+  - `app/layout.tsx` - Root layout
+  - `app/page.tsx` - Homepage (client component)
+- `lib/` - Utility libraries
+  - `lib/db.ts` - SQLite database connection and functions
+- `schema/` - Database schema definitions (for future Lockplane migration)
 - `public/` - Static assets
-- `index.html` - HTML entry point
-- `vite.config.ts` - Vite configuration
+- `next.config.js` - Next.js configuration
 - `tsconfig.json` - TypeScript configuration
 
 ## Common Tasks
@@ -196,9 +179,9 @@ Schema is managed via Lockplane - see `schema/todos.json`
 
 ### Adding a New Database Column
 
-1. Edit `schema/todos.json` (or relevant schema file)
-2. Run `lockplane migrate`
-3. Update TypeScript types if needed
+1. Update the schema in `lib/db.ts` (ALTER TABLE or recreate)
+2. Update TypeScript types in `lib/db.ts`
+3. Update API routes to handle the new column
 4. Update React components using that data
 5. Build and test: `npm run build`
 6. **Follow the complete checklist above**
@@ -215,13 +198,13 @@ Schema is managed via Lockplane - see `schema/todos.json`
 ## Common Pitfalls
 
 1. **Forgetting to run `npm run build`** - This is the most common issue. Always build!
-2. **Manually creating database tables** - Use Lockplane instead!
-3. **Forgetting to set environment variables** - App won't connect to Supabase
-4. **Not testing the build** - Errors might only show in production
-5. **Committing `.env` file** - Keep credentials secret (use `.env.example` for templates)
-6. **Forgetting to update docs** - Documentation must match code
-7. **Not committing or pushing** - Work isn't complete until it's pushed
-8. **Breaking TypeScript types** - Always fix type errors before committing
+2. **Not testing the build** - Errors might only show in production
+3. **Committing `todos.db` file** - Database is in .gitignore, keep it that way
+4. **Forgetting to update docs** - Documentation must match code
+5. **Not committing or pushing** - Work isn't complete until it's pushed
+6. **Breaking TypeScript types** - Always fix type errors before committing
+7. **Using async code in better-sqlite3** - It's synchronous, don't use await
+8. **Deploying to Vercel without migrating database** - SQLite doesn't work on serverless, need hosted DB
 
 ## Remember
 

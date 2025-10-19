@@ -1,110 +1,50 @@
 # Lockplane Todos
 
-A modern, beautiful todo list application built with React, Vite, and Supabase.
+A modern, beautiful todo list application built with Next.js, TypeScript, and SQLite.
 
-**Live Demo:** https://lockplane-todos-mqnwktkzl-zakandrewkings-projects.vercel.app
+**Live Demo:** https://lockplane-todos-6momp9b6g-zakandrewkings-projects.vercel.app
 
 ## Features
 
-- GitHub OAuth authentication
 - Add, complete, and delete todos
 - Filter todos by all, active, or completed
 - Clear all completed todos at once
-- Real-time syncing across devices
-- Supabase backend for persistent storage
+- SQLite database for persistent storage
 - Responsive design that works on mobile and desktop
 - Beautiful gradient UI with smooth animations
+- Fast and lightweight
 
-## Supabase Setup
+## Tech Stack
 
-### 1. Create a Supabase Project
-
-1. Go to [https://supabase.com](https://supabase.com) and sign up
-2. Create a new project
-3. Wait for the project to finish setting up
-
-### 2. Create the Todos Table
-
-This project uses [Lockplane](https://lockplane.com) for schema management. Lockplane automatically generates and applies migrations from JSON schema files.
-
-1. Install Lockplane CLI:
-   ```bash
-   npm install -g lockplane
-   ```
-
-2. The schema is defined in `schema/todos.json`. To apply it to your Supabase database:
-   ```bash
-   lockplane migrate
-   ```
-
-This will automatically create the todos table with RLS policies and enable realtime.
-
-### 3. Configure GitHub OAuth
-
-1. Go to [GitHub Developer Settings](https://github.com/settings/developers)
-2. Click "New OAuth App"
-3. Fill in the form:
-   - **Application name:** Lockplane Todos
-   - **Homepage URL:** Your Vercel URL (e.g., `https://lockplane-todos-xxx.vercel.app`)
-   - **Authorization callback URL:** `https://<your-supabase-project>.supabase.co/auth/v1/callback`
-4. Click "Register application"
-5. Copy the **Client ID** and generate a **Client Secret**
-6. In Supabase Dashboard:
-   - Go to Authentication > Providers
-   - Enable GitHub
-   - Paste your Client ID and Client Secret
-   - Save
-
-### 4. Set Environment Variables
-
-1. Copy `.env.example` to `.env`:
-   ```bash
-   cp .env.example .env
-   ```
-
-2. Fill in your Supabase credentials in `.env`:
-   ```
-   VITE_SUPABASE_URL=your_supabase_url
-   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-   ```
-
-   You can find these in: Supabase Dashboard > Settings > API
-
-3. For Vercel deployment, add these as environment variables in your project settings
+- **Framework**: Next.js 15 (App Router)
+- **Language**: TypeScript
+- **Database**: SQLite (better-sqlite3)
+- **Styling**: CSS
+- **Deployment**: Vercel
 
 ## Local Development
 
-1. Install dependencies:
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/zakandrewking/lockplane-todos.git
+   cd lockplane-todos
+   ```
+
+2. **Install dependencies**
    ```bash
    npm install
    ```
 
-2. Set up environment variables (see above)
-
-3. Start the development server:
+3. **Start the development server**
    ```bash
    npm run dev
    ```
 
-4. Open your browser to http://localhost:5173
+4. **Open your browser**
 
-## Deploy to Vercel
+   Navigate to http://localhost:3000
 
-1. Commit your changes:
-   ```bash
-   git add .
-   git commit -m "Add Supabase backend"
-   ```
-
-2. Deploy to production:
-   ```bash
-   vercel --prod
-   ```
-
-3. Add environment variables in Vercel:
-   - Go to your project settings
-   - Add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`
-   - Redeploy
+The SQLite database (`todos.db`) will be created automatically on first run.
 
 ## Build for Production
 
@@ -112,4 +52,72 @@ This will automatically create the todos table with RLS policies and enable real
 npm run build
 ```
 
-The built files will be in the `dist` directory.
+The built files will be in the `.next` directory.
+
+To test the production build locally:
+
+```bash
+npm run build
+npm start
+```
+
+## Deploy to Vercel
+
+1. **Push your code to GitHub**
+   ```bash
+   git add .
+   git commit -m "Initial commit"
+   git push
+   ```
+
+2. **Deploy to Vercel**
+   ```bash
+   vercel --prod
+   ```
+
+**Note**: The current version uses local SQLite, which works great for local development. For production deployment on Vercel (which is serverless), you'll need to migrate to a hosted database solution like:
+
+- **Turso** (SQLite-compatible, serverless)
+- **Vercel Postgres** (PostgreSQL)
+- **Neon** (PostgreSQL)
+- **PlanetScale** (MySQL)
+
+## Project Structure
+
+```
+lockplane-todos/
+├── app/                    # Next.js app directory
+│   ├── api/               # API routes
+│   │   └── todos/         # Todos CRUD endpoints
+│   ├── globals.css        # Global styles
+│   ├── layout.tsx         # Root layout
+│   └── page.tsx           # Homepage
+├── lib/                   # Utility libraries
+│   └── db.ts              # SQLite database functions
+├── schema/                # Database schema definitions
+│   └── todos.json         # Todos table schema (Lockplane)
+├── public/                # Static assets
+├── next.config.js         # Next.js configuration
+├── tsconfig.json          # TypeScript configuration
+└── package.json           # Dependencies
+```
+
+## API Routes
+
+- `GET /api/todos` - Fetch all todos
+- `POST /api/todos` - Create a new todo
+- `PUT /api/todos/[id]` - Update a todo (toggle completed)
+- `DELETE /api/todos/[id]` - Delete a todo
+
+## Future Enhancements
+
+- [ ] Migrate to hosted SQLite (Turso) for production
+- [ ] Add user authentication
+- [ ] Add todo categories/tags
+- [ ] Add due dates
+- [ ] Add priority levels
+- [ ] Add search functionality
+
+## License
+
+Apache 2.0

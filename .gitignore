@@ -6,6 +6,13 @@ package-lock.json
 dist
 dist-ssr
 *.local
+.next
+out
+
+# Database
+*.db
+*.db-shm
+*.db-wal
 
 # Editor
 .vscode
@@ -33,3 +40,7 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 .vercel
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
