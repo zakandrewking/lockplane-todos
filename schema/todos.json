@@ -1,0 +1,50 @@
+{
+  "$schema": "https://raw.githubusercontent.com/zakandrewking/lockplane/v0.1.0/schema-json/schema.json",
+  "tables": [
+    {
+      "name": "todos",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()",
+          "is_primary_key": true
+        },
+        {
+          "name": "user_id",
+          "type": "uuid",
+          "nullable": false,
+          "is_primary_key": false
+        },
+        {
+          "name": "text",
+          "type": "text",
+          "nullable": false,
+          "is_primary_key": false
+        },
+        {
+          "name": "completed",
+          "type": "boolean",
+          "nullable": false,
+          "default": "false",
+          "is_primary_key": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "timezone('utc'::text, now())",
+          "is_primary_key": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "columns": ["user_id"],
+          "referenced_table": "auth.users",
+          "referenced_columns": ["id"]
+        }
+      ]
+    }
+  ]
+}
