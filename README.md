@@ -2,6 +2,8 @@
 
 A modern, beautiful todo list application built with React, Vite, and Supabase.
 
+**Live Demo:** https://lockplane-todos-mqnwktkzl-zakandrewkings-projects.vercel.app
+
 ## Features
 
 - GitHub OAuth authentication
