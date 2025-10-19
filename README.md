@@ -23,41 +23,19 @@ A modern, beautiful todo list application built with React, Vite, and Supabase.
 
 ### 2. Create the Todos Table
 
-In the Supabase SQL Editor, run this query:
+This project uses [Lockplane](https://lockplane.com) for schema management. Lockplane automatically generates and applies migrations from JSON schema files.
 
-```sql
--- Create todos table
-create table todos (
-  id uuid default gen_random_uuid() primary key,
-  user_id uuid references auth.users not null,
-  text text not null,
-  completed boolean default false,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null
-);
+1. Install Lockplane CLI:
+   ```bash
+   npm install -g lockplane
+   ```
 
--- Enable Row Level Security
-alter table todos enable row level security;
+2. The schema is defined in `schema/todos.json`. To apply it to your Supabase database:
+   ```bash
+   lockplane migrate
+   ```
 
--- Create policies
-create policy "Users can view their own todos"
-  on todos for select
-  using (auth.uid() = user_id);
-
-create policy "Users can insert their own todos"
-  on todos for insert
-  with check (auth.uid() = user_id);
-
-create policy "Users can update their own todos"
-  on todos for update
-  using (auth.uid() = user_id);
-
-create policy "Users can delete their own todos"
-  on todos for delete
-  using (auth.uid() = user_id);
-
--- Enable Realtime
-alter publication supabase_realtime add table todos;
-```
+This will automatically create the todos table with RLS policies and enable realtime.
 
 ### 3. Configure GitHub OAuth
 
