@@ -94,25 +94,43 @@ npm start
 
 ## Deploy to Vercel
 
-1. **Push your code to GitHub**
-   ```bash
-   git add .
-   git commit -m "Initial commit"
-   git push
-   ```
+### Initial Setup
+
+1. **Connect GitHub repository to Vercel**
+   - Go to https://vercel.com/dashboard
+   - Import your GitHub repository: `zakandrewking/lockplane-todos`
+   - Vercel will install the GitHub app and configure webhooks
 
 2. **Add Turso environment variables to Vercel**
+   - In Vercel dashboard, go to Settings → Environment Variables
+   - Add `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN`
+   - Or use the CLI:
    ```bash
    echo "your_database_url" | vercel env add TURSO_DATABASE_URL production
    echo "your_auth_token" | vercel env add TURSO_AUTH_TOKEN production
    ```
 
-3. **Deploy to Vercel**
+3. **Trigger initial deployment**
    ```bash
-   vercel --prod
+   git push
    ```
 
 The app is now deployed with Turso as the database backend!
+
+### Automatic Deployments
+
+Once connected to GitHub, Vercel automatically deploys:
+- **Production**: Every push to `main` branch
+- **Preview**: Every push to other branches or pull requests
+
+Just commit and push your changes:
+```bash
+git add .
+git commit -m "Your changes"
+git push
+```
+
+Vercel will automatically build and deploy your changes. Check deployment status at https://vercel.com/dashboard
 
 ## Project Structure
 
