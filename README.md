@@ -1,15 +1,16 @@
 # Lockplane Todos
 
-A modern, beautiful todo list application built with Next.js, TypeScript, and SQLite.
+A modern, beautiful todo list application built with Next.js, TypeScript, and Turso.
 
-**Live Demo:** https://lockplane-todos-6momp9b6g-zakandrewkings-projects.vercel.app
+**Live Demo:** https://lockplane-todos-exm708la9-zakandrewkings-projects.vercel.app
 
 ## Features
 
 - Add, complete, and delete todos
 - Filter todos by all, active, or completed
 - Clear all completed todos at once
-- SQLite database for persistent storage
+- Turso (SQLite) database for persistent storage
+- Serverless and edge-compatible
 - Responsive design that works on mobile and desktop
 - Beautiful gradient UI with smooth animations
 - Fast and lightweight
@@ -18,7 +19,7 @@ A modern, beautiful todo list application built with Next.js, TypeScript, and SQ
 
 - **Framework**: Next.js 15 (App Router)
 - **Language**: TypeScript
-- **Database**: SQLite (better-sqlite3)
+- **Database**: Turso (libSQL/SQLite)
 - **Styling**: CSS
 - **Deployment**: Vercel
 
@@ -35,16 +36,46 @@ A modern, beautiful todo list application built with Next.js, TypeScript, and SQ
    npm install
    ```
 
-3. **Start the development server**
+3. **Set up Turso database**
+
+   a. Install Turso CLI:
+   ```bash
+   curl -sSfL https://get.tur.so/install.sh | bash
+   ```
+
+   b. Log in to Turso:
+   ```bash
+   turso auth login
+   ```
+
+   c. Create a database:
+   ```bash
+   turso db create lockplane-todos
+   ```
+
+   d. Get your database credentials:
+   ```bash
+   turso db show lockplane-todos
+   ```
+
+4. **Configure environment variables**
+
+   Create a `.env.local` file:
+   ```bash
+   TURSO_DATABASE_URL=your_database_url_here
+   TURSO_AUTH_TOKEN=your_auth_token_here
+   ```
+
+5. **Start the development server**
    ```bash
    npm run dev
    ```
 
-4. **Open your browser**
+6. **Open your browser**
 
    Navigate to http://localhost:3000
 
-The SQLite database (`todos.db`) will be created automatically on first run.
+The database schema will be created automatically on first API request.
 
 ## Build for Production
 
@@ -70,17 +101,18 @@ npm start
    git push
    ```
 
-2. **Deploy to Vercel**
+2. **Add Turso environment variables to Vercel**
+   ```bash
+   echo "your_database_url" | vercel env add TURSO_DATABASE_URL production
+   echo "your_auth_token" | vercel env add TURSO_AUTH_TOKEN production
+   ```
+
+3. **Deploy to Vercel**
    ```bash
    vercel --prod
    ```
 
-**Note**: The current version uses local SQLite, which works great for local development. For production deployment on Vercel (which is serverless), you'll need to migrate to a hosted database solution like:
-
-- **Turso** (SQLite-compatible, serverless)
-- **Vercel Postgres** (PostgreSQL)
-- **Neon** (PostgreSQL)
-- **PlanetScale** (MySQL)
+The app is now deployed with Turso as the database backend!
 
 ## Project Structure
 
@@ -93,7 +125,7 @@ lockplane-todos/
 │   ├── layout.tsx         # Root layout
 │   └── page.tsx           # Homepage
 ├── lib/                   # Utility libraries
-│   └── db.ts              # SQLite database functions
+│   └── db.ts              # Turso database client and functions
 ├── schema/                # Database schema definitions
 │   └── todos.json         # Todos table schema (Lockplane)
 ├── public/                # Static assets
@@ -111,12 +143,13 @@ lockplane-todos/
 
 ## Future Enhancements
 
-- [ ] Migrate to hosted SQLite (Turso) for production
+- [x] Migrate to hosted SQLite (Turso) for production ✅
 - [ ] Add user authentication
 - [ ] Add todo categories/tags
 - [ ] Add due dates
 - [ ] Add priority levels
 - [ ] Add search functionality
+- [ ] Add realtime collaboration
 
 ## License
 

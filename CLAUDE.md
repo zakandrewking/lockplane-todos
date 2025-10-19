@@ -7,8 +7,8 @@ This file contains project-specific instructions for AI assistants working on Lo
 Lockplane Todos is a modern todo list application built with:
 - **Framework**: Next.js 15 (App Router)
 - **Language**: TypeScript
-- **Database**: SQLite (better-sqlite3)
-- **Future**: Migrate to hosted SQLite (Turso) or Postgres for production
+- **Database**: Turso (libSQL/SQLite)
+- **Deployment**: Vercel with serverless functions
 
 ## 🚨 COMPLETE WORKFLOW CHECKLIST 🚨
 
@@ -134,15 +134,22 @@ npm run lint
 
 ## Database
 
-This app uses SQLite for local development:
-- Database file: `todos.db` (auto-created)
-- Schema: See `lib/db.ts` for table definitions
-- ORM: better-sqlite3 for synchronous SQLite access
+This app uses Turso (libSQL/SQLite) for both local and production:
+- **Client**: @libsql/client (async)
+- **Schema**: Auto-initialized on first request in `lib/db.ts`
+- **Lazy Loading**: Database client is created on-demand to support serverless
+- **Environment Variables**:
+  - `TURSO_DATABASE_URL` - Database connection URL
+  - `TURSO_AUTH_TOKEN` - Authentication token
 
-For production deployment on Vercel, consider migrating to:
-- **Turso** (hosted SQLite, serverless)
-- **Vercel Postgres** (PostgreSQL)
-- **Neon** (PostgreSQL)
+### Setting up Turso
+
+1. Install Turso CLI: `curl -sSfL https://get.tur.so/install.sh | bash`
+2. Login: `turso auth login`
+3. Create database: `turso db create your-db-name`
+4. Get credentials: `turso db show your-db-name`
+5. Add to `.env.local` for local development
+6. Add to Vercel environment variables for production
 
 ## Git Workflow
 
@@ -160,7 +167,7 @@ For production deployment on Vercel, consider migrating to:
   - `app/layout.tsx` - Root layout
   - `app/page.tsx` - Homepage (client component)
 - `lib/` - Utility libraries
-  - `lib/db.ts` - SQLite database connection and functions
+  - `lib/db.ts` - Turso/libSQL database client and functions
 - `schema/` - Database schema definitions (for future Lockplane migration)
 - `public/` - Static assets
 - `next.config.js` - Next.js configuration
@@ -199,12 +206,12 @@ For production deployment on Vercel, consider migrating to:
 
 1. **Forgetting to run `npm run build`** - This is the most common issue. Always build!
 2. **Not testing the build** - Errors might only show in production
-3. **Committing `todos.db` file** - Database is in .gitignore, keep it that way
+3. **Forgetting Turso environment variables** - Must set TURSO_DATABASE_URL and TURSO_AUTH_TOKEN
 4. **Forgetting to update docs** - Documentation must match code
 5. **Not committing or pushing** - Work isn't complete until it's pushed
 6. **Breaking TypeScript types** - Always fix type errors before committing
-7. **Using async code in better-sqlite3** - It's synchronous, don't use await
-8. **Deploying to Vercel without migrating database** - SQLite doesn't work on serverless, need hosted DB
+7. **Not awaiting async database calls** - Turso uses @libsql/client which is async
+8. **Committing `.env.local`** - Keep credentials secret, it's in .gitignore
 
 ## Remember
 

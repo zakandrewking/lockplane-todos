@@ -9,7 +9,7 @@ export async function PUT(
     const { completed } = await request.json()
     const { id } = await params
 
-    const todo = updateTodo(id, completed)
+    const todo = await updateTodo(id, completed)
 
     if (!todo) {
       return NextResponse.json(
@@ -35,7 +35,7 @@ export async function DELETE(
   try {
     const { id } = await params
 
-    const success = deleteTodo(id)
+    const success = await deleteTodo(id)
 
     if (!success) {
       return NextResponse.json(

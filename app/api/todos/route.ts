@@ -3,7 +3,7 @@ import { getAllTodos, createTodo } from '@/lib/db'
 
 export async function GET() {
   try {
-    const todos = getAllTodos()
+    const todos = await getAllTodos()
     return NextResponse.json({ todos })
   } catch (error) {
     console.error('Error fetching todos:', error)
@@ -25,7 +25,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const todo = createTodo(text)
+    const todo = await createTodo(text)
     return NextResponse.json({ todo }, { status: 201 })
   } catch (error) {
     console.error('Error creating todo:', error)
