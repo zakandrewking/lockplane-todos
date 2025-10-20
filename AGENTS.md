@@ -74,8 +74,10 @@ This project plans to use [Lockplane](https://lockplane.com) for database schema
 
 For now:
 - Schema is initialized in `lib/db.ts`
-- Schema definition exists in `schema/todos.json` for future migration
+- Preferred declarative schema lives in `schema/todos.lp.sql` (with `schema/todos.json` retained only for legacy tooling)
 - When ready to migrate, use Lockplane to apply the schema
+
+Declarative `.lp.sql` files should stay free of imperative changes: avoid `CREATE OR REPLACE`, `DROP` statements, explicit transaction control, or conditional clauses such as `IF (NOT) EXISTS`. After editing any schema files, run `npm test` to execute the `.lp.sql` validator tests.
 
 ## Development Workflow
 
@@ -187,11 +189,13 @@ This app uses Turso (libSQL/SQLite) for both local and production:
 ### Adding a New Database Column
 
 1. Update the schema in `lib/db.ts` (ALTER TABLE or recreate)
-2. Update TypeScript types in `lib/db.ts`
-3. Update API routes to handle the new column
-4. Update React components using that data
-5. Build and test: `npm run build`
-6. **Follow the complete checklist above**
+2. Update `schema/todos.lp.sql` to reflect the new column (avoid `CREATE OR REPLACE`, `DROP`, or conditional clauses)
+3. Update TypeScript types in `lib/db.ts`
+4. Update API routes to handle the new column
+5. Update React components using that data
+6. Build and test: `npm run build`
+7. Validate schema files: `npm test`
+8. **Follow the complete checklist above**
 
 ### Fixing a Bug
 

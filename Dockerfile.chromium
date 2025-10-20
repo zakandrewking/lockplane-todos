@@ -1,0 +1,10 @@
+FROM ghcr.io/puppeteer/puppeteer:latest
+
+WORKDIR /home/pptruser/app
+
+COPY scripts/inspect-frontend.mjs ./inspect-frontend.mjs
+
+ENV APP_URL=http://host.docker.internal:4000
+ENV NODE_PATH=/home/pptruser/node_modules
+
+CMD ["node", "/home/pptruser/app/inspect-frontend.mjs"]

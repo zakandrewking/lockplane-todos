@@ -145,7 +145,8 @@ lockplane-todos/
 ├── lib/                   # Utility libraries
 │   └── db.ts              # Turso database client and functions
 ├── schema/                # Database schema definitions
-│   └── todos.json         # Todos table schema (Lockplane)
+│   ├── todos.lp.sql       # Preferred declarative schema (Lockplane)
+│   └── todos.json         # Legacy JSON schema reference
 ├── public/                # Static assets
 ├── next.config.js         # Next.js configuration
 ├── tsconfig.json          # TypeScript configuration
@@ -168,6 +169,19 @@ lockplane-todos/
 - [ ] Add priority levels
 - [ ] Add search functionality
 - [ ] Add realtime collaboration
+
+## Lockplane Schema Files
+
+Lockplane supports both JSON and SQL descriptions of a schema, but `.lp.sql` files are now the preferred format. The repository includes `schema/todos.lp.sql` as the source of truth, and `schema/todos.json` is kept only for backward compatibility with older tooling.
+
+Declarative `.lp.sql` files should avoid procedural or imperative statements. In particular:
+
+- Do **not** use `CREATE OR REPLACE` statements—split destructive changes into migrations
+- Avoid `DROP` statements or `ALTER TABLE ... DROP COLUMN`
+- Skip conditional clauses such as `IF (NOT) EXISTS`
+- Omit explicit transaction control (`BEGIN`, `COMMIT`, `ROLLBACK`)
+
+Run `npm test` to execute validator test cases that cover these pitfalls and ensure new schema files follow the declarative style.
 
 ## License
 
