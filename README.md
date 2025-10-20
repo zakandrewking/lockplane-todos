@@ -172,7 +172,25 @@ lockplane-todos/
 
 ## Lockplane Schema Files
 
-Lockplane supports both JSON and SQL descriptions of a schema, but `.lp.sql` files are now the preferred format. The repository includes `schema/todos.lp.sql` as the source of truth, and `schema/todos.json` is kept only for backward compatibility with older tooling.
+This project uses [Lockplane](https://github.com/zakandrewking/lockplane) v0.3.0 for PostgreSQL schema management. Lockplane supports both JSON and SQL descriptions of a schema, but `.lp.sql` files are now the preferred format. The repository includes `schema/todos.lp.sql` as the source of truth, and `schema/todos.json` is kept only for backward compatibility with older tooling.
+
+### Installing Lockplane
+
+**Option 1: Pre-built binaries** (recommended):
+Download from [GitHub Releases](https://github.com/zakandrewking/lockplane/releases/latest), extract, and move to your PATH.
+
+**Option 2: Install from source** (requires Go):
+```bash
+git clone https://github.com/zakandrewking/lockplane.git /tmp/lockplane
+cd /tmp/lockplane
+go install .
+# Add ~/go/bin to your PATH or create a symlink
+sudo ln -sf ~/go/bin/lockplane /usr/local/bin/lockplane
+```
+
+Verify: `lockplane version`
+
+### Schema Guidelines
 
 Declarative `.lp.sql` files should avoid procedural or imperative statements. In particular:
 

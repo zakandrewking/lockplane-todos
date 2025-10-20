@@ -68,9 +68,31 @@ Lockplane Todos is a modern todo list application built with:
 
 The database schema is currently defined manually in `lib/db.ts` using SQLite.
 
-### Future: Lockplane Integration
+### Lockplane Integration
 
-This project plans to use [Lockplane](https://lockplane.com) for database schema management when migrating to a hosted database (Postgres or hosted SQLite like Turso).
+This project uses [Lockplane](https://github.com/zakandrewking/lockplane) for database schema management when migrating to a hosted database (Postgres or hosted SQLite like Turso).
+
+#### Installing Lockplane
+
+**Option 1: Pre-built binaries** (recommended for production):
+1. Download from [GitHub Releases](https://github.com/zakandrewking/lockplane/releases/latest)
+2. Extract and move to your PATH
+
+**Option 2: Install from source** (requires Go):
+```bash
+git clone https://github.com/zakandrewking/lockplane.git /tmp/lockplane
+cd /tmp/lockplane
+go install .
+# Add ~/go/bin to your PATH or create a symlink
+sudo ln -sf ~/go/bin/lockplane /usr/local/bin/lockplane
+```
+
+Verify installation:
+```bash
+lockplane version
+```
+
+#### Using Lockplane
 
 For now:
 - Schema is initialized in `lib/db.ts`
