@@ -170,6 +170,17 @@ lockplane-todos/
 - [ ] Add search functionality
 - [ ] Add realtime collaboration
 
+## Claude Code Skills
+
+This project includes the [Playwright Skill](https://github.com/lackeyjb/playwright-skill) for browser automation and testing.
+
+### Installed Skills
+
+**Playwright Skill** - General-purpose browser automation for testing and end-to-end workflows
+- Location: `.claude/skills/playwright-skill/`
+- Usage: Ask Claude to perform browser automation tasks (e.g., "Test if the homepage loads", "Take a screenshot of the todo list")
+- Note: Chromium browser installation may require Docker or local setup depending on environment
+
 ## Lockplane Schema Files
 
 Lockplane supports both JSON and SQL descriptions of a schema, but `.lp.sql` files are now the preferred format. The repository includes `schema/todos.lp.sql` as the source of truth, and `schema/todos.json` is kept only for backward compatibility with older tooling.
