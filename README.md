@@ -6,15 +6,16 @@ A modern, beautiful todo list application built with Next.js, TypeScript, and Tu
 
 ## Features
 
-- Add, complete, and delete todos
-- Organize todos into projects (schema and database layer ready)
-- Filter todos by all, active, or completed
-- Clear all completed todos at once
-- Turso (SQLite) database for persistent storage
-- Serverless and edge-compatible
-- Responsive design that works on mobile and desktop
-- Beautiful gradient UI with smooth animations
-- Fast and lightweight
+- **Projects**: Organize todos into projects with a beautiful sidebar
+- **Todo Management**: Add, complete, and delete todos
+- **Smart Filtering**: Filter todos by project, all, active, or completed
+- **Project Filtering**: View todos by specific project or all todos
+- **Bulk Actions**: Clear all completed todos at once
+- **Persistent Storage**: Turso (SQLite) database with automatic schema initialization
+- **Modern UI**: Beautiful gradient design with smooth animations
+- **Responsive**: Works seamlessly on mobile, tablet, and desktop
+- **Serverless**: Edge-compatible, deploys to Vercel
+- **Fast & Lightweight**: Optimized Next.js 15 with App Router
 
 ## Tech Stack
 
@@ -156,10 +157,17 @@ lockplane-todos/
 
 ## API Routes
 
+### Todos
 - `GET /api/todos` - Fetch all todos
-- `POST /api/todos` - Create a new todo
+- `POST /api/todos` - Create a new todo (accepts `text` and optional `project_id`)
 - `PUT /api/todos/[id]` - Update a todo (toggle completed)
 - `DELETE /api/todos/[id]` - Delete a todo
+
+### Projects
+- `GET /api/projects` - Fetch all projects
+- `POST /api/projects` - Create a new project (accepts `name` and optional `description`)
+- `PUT /api/projects/[id]` - Update a project (accepts `name` and optional `description`)
+- `DELETE /api/projects/[id]` - Delete a project (todos remain, their `project_id` set to null)
 
 ## Database Schema
 
@@ -191,17 +199,19 @@ CREATE TABLE todos (
 - Projects: `getAllProjects()`, `createProject()`, `updateProject()`, `deleteProject()`, `getTodosByProject()`
 - Todos: `getAllTodos()`, `createTodo()`, `updateTodo()`, `deleteTodo()`
 
-Note: API routes and UI for projects are planned for future implementation.
+The UI includes a projects sidebar for easy project management and todo organization.
 
 ## Future Enhancements
 
 - [x] Migrate to hosted SQLite (Turso) for production ✅
 - [x] Add projects schema and database layer ✅
+- [x] Add projects API routes and UI ✅
 - [ ] Add user authentication
-- [ ] Add projects API routes and UI
-- [ ] Add due dates
+- [ ] Add due dates and reminders
 - [ ] Add priority levels
 - [ ] Add search functionality
+- [ ] Add drag-and-drop for todos
+- [ ] Add project descriptions/notes editing
 - [ ] Add realtime collaboration
 
 ## Lockplane Schema Files
