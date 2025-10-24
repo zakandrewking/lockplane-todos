@@ -2,7 +2,7 @@
 
 A modern, beautiful todo list application built with Next.js, TypeScript, and Turso.
 
-**Live Demo:** https://lockplane-todos-exm708la9-zakandrewkings-projects.vercel.app
+**Live Demo:** <https://lockplane-todos.vercel.app/>
 
 ## Features
 
