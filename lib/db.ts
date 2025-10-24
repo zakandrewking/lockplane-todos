@@ -39,6 +39,19 @@ export async function ensureInitialized() {
           FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE SET NULL
         )
       `)
+
+      // Migration: Add project_id column if it doesn't exist
+      try {
+        await client.execute(`
+          ALTER TABLE todos ADD COLUMN project_id TEXT
+        `)
+      } catch (error: any) {
+        // Column already exists or table doesn't exist yet - that's fine
+        if (!error.message?.includes('duplicate column name')) {
+          // Log unexpected errors but don't fail initialization
+          console.error('Migration warning:', error.message)
+        }
+      }
     })()
   }
   return initPromise
