@@ -7,6 +7,7 @@ A modern, beautiful todo list application built with Next.js, TypeScript, and Tu
 ## Features
 
 - Add, complete, and delete todos
+- Organize todos into projects (schema and database layer ready)
 - Filter todos by all, active, or completed
 - Clear all completed todos at once
 - Turso (SQLite) database for persistent storage
@@ -160,11 +161,44 @@ lockplane-todos/
 - `PUT /api/todos/[id]` - Update a todo (toggle completed)
 - `DELETE /api/todos/[id]` - Delete a todo
 
+## Database Schema
+
+The application uses two tables:
+
+### Projects Table
+```sql
+CREATE TABLE projects (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  description TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+```
+
+### Todos Table
+```sql
+CREATE TABLE todos (
+  id TEXT PRIMARY KEY,
+  text TEXT NOT NULL,
+  completed INTEGER NOT NULL DEFAULT 0,
+  project_id TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE SET NULL
+);
+```
+
+**Database Functions Available** (in `lib/db.ts`):
+- Projects: `getAllProjects()`, `createProject()`, `updateProject()`, `deleteProject()`, `getTodosByProject()`
+- Todos: `getAllTodos()`, `createTodo()`, `updateTodo()`, `deleteTodo()`
+
+Note: API routes and UI for projects are planned for future implementation.
+
 ## Future Enhancements
 
 - [x] Migrate to hosted SQLite (Turso) for production ✅
+- [x] Add projects schema and database layer ✅
 - [ ] Add user authentication
-- [ ] Add todo categories/tags
+- [ ] Add projects API routes and UI
 - [ ] Add due dates
 - [ ] Add priority levels
 - [ ] Add search functionality
