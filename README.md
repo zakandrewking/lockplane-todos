@@ -11,7 +11,7 @@ A modern, beautiful todo list application built with Next.js, TypeScript, and Tu
 - **Smart Filtering**: Filter todos by project, all, active, or completed
 - **Project Filtering**: View todos by specific project or all todos
 - **Bulk Actions**: Clear all completed todos at once
-- **Persistent Storage**: Turso (SQLite) database with automatic schema initialization
+- **Persistent Storage**: Turso (SQLite) database with Lockplane schema management
 - **Modern UI**: Beautiful gradient design with smooth animations
 - **Responsive**: Works seamlessly on mobile, tablet, and desktop
 - **Serverless**: Edge-compatible, deploys to Vercel
@@ -22,6 +22,7 @@ A modern, beautiful todo list application built with Next.js, TypeScript, and Tu
 - **Framework**: Next.js 15 (App Router)
 - **Language**: TypeScript
 - **Database**: Turso (libSQL/SQLite)
+- **Schema Management**: Lockplane
 - **Styling**: CSS
 - **Deployment**: Vercel
 
@@ -68,16 +69,29 @@ A modern, beautiful todo list application built with Next.js, TypeScript, and Tu
    TURSO_AUTH_TOKEN=your_auth_token_here
    ```
 
-5. **Start the development server**
+5. **Install Lockplane CLI**
+   ```bash
+   npm install -g lockplane
+   ```
+
+6. **Apply database schema**
+   ```bash
+   npm run schema:apply
+   ```
+
+   Or use Lockplane directly:
+   ```bash
+   lockplane apply --auto-approve --from $TURSO_DATABASE_URL --to schema/
+   ```
+
+7. **Start the development server**
    ```bash
    npm run dev
    ```
 
-6. **Open your browser**
+8. **Open your browser**
 
    Navigate to http://localhost:3000
-
-The database schema will be created automatically on first API request.
 
 ## Build for Production
 
@@ -206,6 +220,7 @@ The UI includes a projects sidebar for easy project management and todo organiza
 - [x] Migrate to hosted SQLite (Turso) for production ✅
 - [x] Add projects schema and database layer ✅
 - [x] Add projects API routes and UI ✅
+- [x] Integrate Lockplane for schema management ✅
 - [ ] Add user authentication
 - [ ] Add due dates and reminders
 - [ ] Add priority levels
@@ -214,18 +229,35 @@ The UI includes a projects sidebar for easy project management and todo organiza
 - [ ] Add project descriptions/notes editing
 - [ ] Add realtime collaboration
 
-## Lockplane Schema Files
+## Lockplane Schema Management
 
-Lockplane supports both JSON and SQL descriptions of a schema, but `.lp.sql` files are now the preferred format. The repository includes `schema/todos.lp.sql` as the source of truth, and `schema/todos.json` is kept only for backward compatibility with older tooling.
+This project uses [Lockplane](https://lockplane.com) for safe database schema management. The schema is defined in `schema/todos.lp.sql` and applied using the Lockplane CLI.
 
-Declarative `.lp.sql` files should avoid procedural or imperative statements. In particular:
+### Making Schema Changes
 
-- Do **not** use `CREATE OR REPLACE` statements—split destructive changes into migrations
-- Avoid `DROP` statements or `ALTER TABLE ... DROP COLUMN`
-- Skip conditional clauses such as `IF (NOT) EXISTS`
-- Omit explicit transaction control (`BEGIN`, `COMMIT`, `ROLLBACK`)
+1. Edit `schema/todos.lp.sql` with your changes
+2. Validate the schema:
+   ```bash
+   npm run schema:validate
+   ```
+3. Apply changes to your database:
+   ```bash
+   npm run schema:apply
+   ```
 
-Run `npm test` to execute validator test cases that cover these pitfalls and ensure new schema files follow the declarative style.
+Lockplane tests all migrations on a shadow database before applying them to production, ensuring safety.
+
+### Schema File Requirements
+
+Declarative `.lp.sql` files must follow these rules:
+
+- ✅ Use standard DDL: `CREATE TABLE`, `CREATE INDEX`, `ALTER TABLE ADD COLUMN`
+- ❌ No `CREATE OR REPLACE` statements
+- ❌ No `DROP` statements or `ALTER TABLE ... DROP COLUMN`
+- ❌ No conditional clauses like `IF (NOT) EXISTS`
+- ❌ No transaction control (`BEGIN`, `COMMIT`, `ROLLBACK`)
+
+Lockplane automatically validates these rules when you run `npm run schema:validate`.
 
 ## License
 

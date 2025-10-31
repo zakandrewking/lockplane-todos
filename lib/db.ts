@@ -15,44 +15,11 @@ function getClient(): Client {
 }
 
 export async function ensureInitialized() {
+  // Schema is managed by Lockplane - no manual initialization needed
+  // This function is kept for backwards compatibility with existing code
+  // In production, ensure `lockplane apply` has been run before deploying
   if (!initPromise) {
-    const client = getClient()
-    initPromise = (async () => {
-      // Create projects table first (foreign key dependency)
-      await client.execute(`
-        CREATE TABLE IF NOT EXISTS projects (
-          id TEXT PRIMARY KEY,
-          name TEXT NOT NULL,
-          description TEXT,
-          created_at TEXT NOT NULL DEFAULT (datetime('now'))
-        )
-      `)
-
-      // Create todos table with project relationship
-      await client.execute(`
-        CREATE TABLE IF NOT EXISTS todos (
-          id TEXT PRIMARY KEY,
-          text TEXT NOT NULL,
-          completed INTEGER NOT NULL DEFAULT 0,
-          project_id TEXT,
-          created_at TEXT NOT NULL DEFAULT (datetime('now')),
-          FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE SET NULL
-        )
-      `)
-
-      // Migration: Add project_id column if it doesn't exist
-      try {
-        await client.execute(`
-          ALTER TABLE todos ADD COLUMN project_id TEXT
-        `)
-      } catch (error: any) {
-        // Column already exists or table doesn't exist yet - that's fine
-        if (!error.message?.includes('duplicate column name')) {
-          // Log unexpected errors but don't fail initialization
-          console.error('Migration warning:', error.message)
-        }
-      }
-    })()
+    initPromise = Promise.resolve()
   }
   return initPromise
 }
