@@ -15,7 +15,9 @@ out
 *.db-wal
 
 # Editor
-.vscode
+.vscode/*
+!.vscode/launch.json
+!.vscode/settings.json
 .idea
 *.swp
 *.swo
