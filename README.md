@@ -6,11 +6,13 @@ A modern, beautiful todo list application built with Next.js, TypeScript, and Tu
 
 ## Features
 
+- **User Authentication**: Secure login and signup with password hashing
 - **Projects**: Organize todos into projects with a beautiful sidebar
 - **Todo Management**: Add, complete, and delete todos
 - **Smart Filtering**: Filter todos by project, all, active, or completed
 - **Project Filtering**: View todos by specific project or all todos
 - **Bulk Actions**: Clear all completed todos at once
+- **User Isolation**: Each user only sees their own todos and projects
 - **Persistent Storage**: Turso (SQLite) database with Lockplane schema management
 - **Modern UI**: Beautiful gradient design with smooth animations
 - **Responsive**: Works seamlessly on mobile, tablet, and desktop
@@ -22,6 +24,7 @@ A modern, beautiful todo list application built with Next.js, TypeScript, and Tu
 - **Framework**: Next.js 15 (App Router)
 - **Language**: TypeScript
 - **Database**: Turso (libSQL/SQLite)
+- **Authentication**: NextAuth.js v5
 - **Schema Management**: Lockplane
 - **Styling**: CSS
 - **Deployment**: Vercel
@@ -67,6 +70,13 @@ A modern, beautiful todo list application built with Next.js, TypeScript, and Tu
    ```bash
    TURSO_DATABASE_URL=your_database_url_here
    TURSO_AUTH_TOKEN=your_auth_token_here
+   NEXTAUTH_SECRET=your_random_secret_here
+   NEXTAUTH_URL=http://localhost:3000
+   ```
+
+   Generate a secure random secret for `NEXTAUTH_SECRET`:
+   ```bash
+   openssl rand -base64 32
    ```
 
 5. **Install Lockplane CLI**
@@ -117,13 +127,15 @@ npm start
    - Import your GitHub repository: `zakandrewking/lockplane-todos`
    - Vercel will install the GitHub app and configure webhooks
 
-2. **Add Turso environment variables to Vercel**
+2. **Add environment variables to Vercel**
    - In Vercel dashboard, go to Settings → Environment Variables
-   - Add `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN`
+   - Add `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`, `NEXTAUTH_SECRET`, and `NEXTAUTH_URL`
    - Or use the CLI:
    ```bash
    echo "your_database_url" | vercel env add TURSO_DATABASE_URL production
    echo "your_auth_token" | vercel env add TURSO_AUTH_TOKEN production
+   echo "your_random_secret" | vercel env add NEXTAUTH_SECRET production
+   echo "https://your-app.vercel.app" | vercel env add NEXTAUTH_URL production
    ```
 
 3. **Trigger initial deployment**
@@ -154,12 +166,21 @@ Vercel will automatically build and deploy your changes. Check deployment status
 lockplane-todos/
 ├── app/                    # Next.js app directory
 │   ├── api/               # API routes
-│   │   └── todos/         # Todos CRUD endpoints
+│   │   ├── auth/          # Authentication endpoints
+│   │   ├── todos/         # Todos CRUD endpoints
+│   │   └── projects/      # Projects CRUD endpoints
+│   ├── login/             # Login/signup page
 │   ├── globals.css        # Global styles
 │   ├── layout.tsx         # Root layout
-│   └── page.tsx           # Homepage
+│   ├── page.tsx           # Homepage
+│   └── providers.tsx      # Session provider
 ├── lib/                   # Utility libraries
+│   ├── auth.ts            # NextAuth configuration
+│   ├── auth-helpers.ts    # Authentication helper functions
+│   ├── auth-server.ts     # Server-side auth functions
 │   └── db.ts              # Turso database client and functions
+├── types/                 # TypeScript type definitions
+│   └── next-auth.d.ts     # NextAuth type extensions
 ├── schema/                # Database schema definitions
 │   ├── todos.lp.sql       # Preferred declarative schema (Lockplane)
 │   └── todos.json         # Legacy JSON schema reference
@@ -171,21 +192,38 @@ lockplane-todos/
 
 ## API Routes
 
+All API routes require authentication. Unauthenticated requests will return a 401 status.
+
+### Authentication
+- `POST /api/auth/signup` - Create a new user account (accepts `email`, `password`, and optional `name`)
+- `POST /api/auth/[...nextauth]` - NextAuth.js authentication endpoint (handles login/logout)
+
 ### Todos
-- `GET /api/todos` - Fetch all todos
+- `GET /api/todos` - Fetch all todos for the authenticated user
 - `POST /api/todos` - Create a new todo (accepts `text` and optional `project_id`)
 - `PUT /api/todos/[id]` - Update a todo (toggle completed)
 - `DELETE /api/todos/[id]` - Delete a todo
 
 ### Projects
-- `GET /api/projects` - Fetch all projects
+- `GET /api/projects` - Fetch all projects for the authenticated user
 - `POST /api/projects` - Create a new project (accepts `name` and optional `description`)
 - `PUT /api/projects/[id]` - Update a project (accepts `name` and optional `description`)
 - `DELETE /api/projects/[id]` - Delete a project (todos remain, their `project_id` set to null)
 
 ## Database Schema
 
-The application uses two tables:
+The application uses three tables:
+
+### Users Table
+```sql
+CREATE TABLE users (
+  id TEXT PRIMARY KEY,
+  email TEXT NOT NULL UNIQUE,
+  password_hash TEXT NOT NULL,
+  name TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+```
 
 ### Projects Table
 ```sql
@@ -193,7 +231,9 @@ CREATE TABLE projects (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
   description TEXT,
-  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  user_id TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 ```
 
@@ -204,16 +244,19 @@ CREATE TABLE todos (
   text TEXT NOT NULL,
   completed INTEGER NOT NULL DEFAULT 0,
   project_id TEXT,
+  user_id TEXT NOT NULL,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
-  FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE SET NULL
+  FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE SET NULL,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 ```
 
 **Database Functions Available** (in `lib/db.ts`):
-- Projects: `getAllProjects()`, `createProject()`, `updateProject()`, `deleteProject()`, `getTodosByProject()`
-- Todos: `getAllTodos()`, `createTodo()`, `updateTodo()`, `deleteTodo()`
+- Users: `createUser()`, `getUserByEmail()`, `getUserById()`, `verifyPassword()`
+- Projects: `getAllProjects(userId)`, `createProject(name, userId, description)`, `updateProject(id, userId, name, description)`, `deleteProject(id, userId)`, `getTodosByProject(project_id, userId)`
+- Todos: `getAllTodos(userId)`, `createTodo(text, userId, project_id)`, `updateTodo(id, userId, completed)`, `deleteTodo(id, userId)`
 
-The UI includes a projects sidebar for easy project management and todo organization.
+All database functions now require a `userId` parameter to ensure user isolation. The UI includes a projects sidebar for easy project management and todo organization.
 
 ## Future Enhancements
 
@@ -221,7 +264,7 @@ The UI includes a projects sidebar for easy project management and todo organiza
 - [x] Add projects schema and database layer ✅
 - [x] Add projects API routes and UI ✅
 - [x] Integrate Lockplane for schema management ✅
-- [ ] Add user authentication
+- [x] Add user authentication ✅
 - [ ] Add due dates and reminders
 - [ ] Add priority levels
 - [ ] Add search functionality

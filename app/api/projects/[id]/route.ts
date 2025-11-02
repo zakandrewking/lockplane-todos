@@ -1,11 +1,13 @@
 import { NextResponse } from 'next/server'
 import { updateProject, deleteProject } from '@/lib/db'
+import { requireAuth } from '@/lib/auth-helpers'
 
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const userId = await requireAuth()
     const { name, description } = await request.json()
     const { id } = await params
 
@@ -16,7 +18,7 @@ export async function PUT(
       )
     }
 
-    const project = await updateProject(id, name, description || null)
+    const project = await updateProject(id, userId, name, description || null)
 
     if (!project) {
       return NextResponse.json(
@@ -27,6 +29,12 @@ export async function PUT(
 
     return NextResponse.json({ project })
   } catch (error) {
+    if (error instanceof Error && error.message === 'Unauthorized') {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
     console.error('Error updating project:', error)
     return NextResponse.json(
       { error: 'Failed to update project' },
@@ -40,9 +48,10 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const userId = await requireAuth()
     const { id } = await params
 
-    const success = await deleteProject(id)
+    const success = await deleteProject(id, userId)
 
     if (!success) {
       return NextResponse.json(
@@ -53,6 +62,12 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error) {
+    if (error instanceof Error && error.message === 'Unauthorized') {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
     console.error('Error deleting project:', error)
     return NextResponse.json(
       { error: 'Failed to delete project' },

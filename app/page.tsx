@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSession, signOut } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 
 type Project = {
   id: string
@@ -18,6 +20,8 @@ type Todo = {
 }
 
 export default function Home() {
+  const { data: session, status } = useSession()
+  const router = useRouter()
   const [todos, setTodos] = useState<Todo[]>([])
   const [projects, setProjects] = useState<Project[]>([])
   const [inputValue, setInputValue] = useState('')
@@ -27,15 +31,28 @@ export default function Home() {
   const [showProjectForm, setShowProjectForm] = useState(false)
   const [loading, setLoading] = useState(true)
 
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/login')
+    }
+  }, [status, router])
+
   // Fetch todos and projects on mount
   useEffect(() => {
-    fetchTodos()
-    fetchProjects()
-  }, [])
+    if (status === 'authenticated') {
+      fetchTodos()
+      fetchProjects()
+    }
+  }, [status])
 
   const fetchTodos = async () => {
     try {
       const response = await fetch('/api/todos')
+      if (response.status === 401) {
+        router.push('/login')
+        return
+      }
       if (!response.ok) throw new Error('Failed to fetch todos')
       const data = await response.json()
       setTodos(data.todos || [])
@@ -49,12 +66,22 @@ export default function Home() {
   const fetchProjects = async () => {
     try {
       const response = await fetch('/api/projects')
+      if (response.status === 401) {
+        router.push('/login')
+        return
+      }
       if (!response.ok) throw new Error('Failed to fetch projects')
       const data = await response.json()
       setProjects(data.projects || [])
     } catch (error) {
       console.error('Error fetching projects:', error)
     }
+  }
+
+  const handleLogout = async () => {
+    await signOut({ redirect: false })
+    router.push('/login')
+    router.refresh()
   }
 
   const addTodo = async (e: React.FormEvent) => {
@@ -189,7 +216,7 @@ export default function Home() {
   const activeTodosCount = todos.filter((todo) => !todo.completed).length
   const completedTodosCount = todos.filter((todo) => todo.completed).length
 
-  if (loading) {
+  if (status === 'loading' || loading) {
     return (
       <div className="app">
         <div className="container">
@@ -197,6 +224,10 @@ export default function Home() {
         </div>
       </div>
     )
+  }
+
+  if (status === 'unauthenticated') {
+    return null // Will redirect via useEffect
   }
 
   const selectedProject = projects.find(p => p.id === selectedProjectId)
@@ -270,7 +301,7 @@ export default function Home() {
                       }}
                       title="Delete project"
                     >
-                      ×
+                      ?
                     </button>
                   </div>
                 </li>
@@ -293,6 +324,12 @@ export default function Home() {
                       ? selectedProject.description || 'Stay organized, get things done'
                       : 'Stay organized, get things done'}
                   </p>
+                </div>
+                <div className="user-section">
+                  <span className="user-email">{session?.user?.email}</span>
+                  <button onClick={handleLogout} className="logout-button">
+                    Logout
+                  </button>
                 </div>
               </div>
             </header>
@@ -358,7 +395,7 @@ export default function Home() {
                       className="delete-button"
                       aria-label="Delete todo"
                     >
-                      ×
+                      ?
                     </button>
                   </li>
                 ))
