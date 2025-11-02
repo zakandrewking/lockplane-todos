@@ -1,11 +1,19 @@
 import { NextResponse } from 'next/server'
 import { getAllTodos, createTodo } from '@/lib/db'
+import { requireAuth } from '@/lib/auth-helpers'
 
 export async function GET() {
   try {
-    const todos = await getAllTodos()
+    const userId = await requireAuth()
+    const todos = await getAllTodos(userId)
     return NextResponse.json({ todos })
   } catch (error) {
+    if (error instanceof Error && error.message === 'Unauthorized') {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
     console.error('Error fetching todos:', error)
     return NextResponse.json(
       { error: 'Failed to fetch todos' },
@@ -16,6 +24,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const userId = await requireAuth()
     const { text, project_id } = await request.json()
 
     if (!text || text.trim() === '') {
@@ -25,9 +34,15 @@ export async function POST(request: Request) {
       )
     }
 
-    const todo = await createTodo(text, project_id || null)
+    const todo = await createTodo(text, userId, project_id || null)
     return NextResponse.json({ todo }, { status: 201 })
   } catch (error) {
+    if (error instanceof Error && error.message === 'Unauthorized') {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
     console.error('Error creating todo:', error)
     return NextResponse.json(
       { error: 'Failed to create todo' },
