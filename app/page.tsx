@@ -1,11 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSession, signOut } from 'next-auth/react'
 
 type Project = {
   id: string
   name: string
   description: string | null
+  user_id: string
   created_at: string
 }
 
@@ -14,10 +16,12 @@ type Todo = {
   text: string
   completed: boolean
   project_id: string | null
+  user_id: string
   created_at: string
 }
 
 export default function Home() {
+  const { data: session, status } = useSession()
   const [todos, setTodos] = useState<Todo[]>([])
   const [projects, setProjects] = useState<Project[]>([])
   const [inputValue, setInputValue] = useState('')
@@ -189,7 +193,7 @@ export default function Home() {
   const activeTodosCount = todos.filter((todo) => !todo.completed).length
   const completedTodosCount = todos.filter((todo) => todo.completed).length
 
-  if (loading) {
+  if (loading || status === 'loading') {
     return (
       <div className="app">
         <div className="container">
@@ -293,6 +297,15 @@ export default function Home() {
                       ? selectedProject.description || 'Stay organized, get things done'
                       : 'Stay organized, get things done'}
                   </p>
+                </div>
+                <div className="user-menu">
+                  <span className="user-email">{session?.user?.email}</span>
+                  <button
+                    onClick={() => signOut({ callbackUrl: '/login' })}
+                    className="logout-button"
+                  >
+                    Logout
+                  </button>
                 </div>
               </div>
             </header>

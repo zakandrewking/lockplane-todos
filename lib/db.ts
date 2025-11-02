@@ -24,10 +24,19 @@ export async function ensureInitialized() {
   return initPromise
 }
 
+export type User = {
+  id: string
+  email: string
+  password_hash: string
+  name: string | null
+  created_at: string
+}
+
 export type Project = {
   id: string
   name: string
   description: string | null
+  user_id: string
   created_at: string
 }
 
@@ -36,7 +45,19 @@ export type Todo = {
   text: string
   completed: boolean
   project_id: string | null
+  user_id: string
   created_at: string
+}
+
+// Convert SQLite row to User
+function rowToUser(row: any): User {
+  return {
+    id: row.id as string,
+    email: row.email as string,
+    password_hash: row.password_hash as string,
+    name: row.name as string | null,
+    created_at: row.created_at as string,
+  }
 }
 
 // Convert SQLite row to Project
@@ -45,6 +66,7 @@ function rowToProject(row: any): Project {
     id: row.id as string,
     name: row.name as string,
     description: row.description as string | null,
+    user_id: row.user_id as string,
     created_at: row.created_at as string,
   }
 }
@@ -56,101 +78,147 @@ function rowToTodo(row: any): Todo {
     text: row.text as string,
     completed: Boolean(row.completed),
     project_id: row.project_id as string | null,
+    user_id: row.user_id as string,
     created_at: row.created_at as string,
   }
 }
 
-export async function getAllTodos(): Promise<Todo[]> {
+// ========== User CRUD Functions ==========
+
+export async function getUserByEmail(email: string): Promise<User | null> {
   await ensureInitialized()
   const client = getClient()
-  const result = await client.execute('SELECT * FROM todos ORDER BY created_at ASC')
-  return result.rows.map(rowToTodo)
+  const result = await client.execute({
+    sql: 'SELECT * FROM users WHERE email = ?',
+    args: [email],
+  })
+  return result.rows.length > 0 ? rowToUser(result.rows[0]) : null
 }
 
-export async function createTodo(text: string, project_id: string | null = null): Promise<Todo> {
+export async function createUser(
+  email: string,
+  password_hash: string,
+  name: string | null = null
+): Promise<User> {
   await ensureInitialized()
   const client = getClient()
   const id = randomUUID()
   const result = await client.execute({
-    sql: 'INSERT INTO todos (id, text, completed, project_id) VALUES (?, ?, 0, ?) RETURNING *',
-    args: [id, text, project_id],
+    sql: 'INSERT INTO users (id, email, password_hash, name) VALUES (?, ?, ?, ?) RETURNING *',
+    args: [id, email, password_hash, name],
+  })
+  return rowToUser(result.rows[0])
+}
+
+// ========== Todo CRUD Functions ==========
+
+export async function getAllTodos(user_id: string): Promise<Todo[]> {
+  await ensureInitialized()
+  const client = getClient()
+  const result = await client.execute({
+    sql: 'SELECT * FROM todos WHERE user_id = ? ORDER BY created_at ASC',
+    args: [user_id],
+  })
+  return result.rows.map(rowToTodo)
+}
+
+export async function createTodo(
+  text: string,
+  user_id: string,
+  project_id: string | null = null
+): Promise<Todo> {
+  await ensureInitialized()
+  const client = getClient()
+  const id = randomUUID()
+  const result = await client.execute({
+    sql: 'INSERT INTO todos (id, text, completed, project_id, user_id) VALUES (?, ?, 0, ?, ?) RETURNING *',
+    args: [id, text, project_id, user_id],
   })
   return rowToTodo(result.rows[0])
 }
 
 export async function updateTodo(
   id: string,
+  user_id: string,
   completed: boolean
 ): Promise<Todo | null> {
   await ensureInitialized()
   const client = getClient()
   const result = await client.execute({
-    sql: 'UPDATE todos SET completed = ? WHERE id = ? RETURNING *',
-    args: [completed ? 1 : 0, id],
+    sql: 'UPDATE todos SET completed = ? WHERE id = ? AND user_id = ? RETURNING *',
+    args: [completed ? 1 : 0, id, user_id],
   })
   return result.rows.length > 0 ? rowToTodo(result.rows[0]) : null
 }
 
-export async function deleteTodo(id: string): Promise<boolean> {
+export async function deleteTodo(id: string, user_id: string): Promise<boolean> {
   await ensureInitialized()
   const client = getClient()
   const result = await client.execute({
-    sql: 'DELETE FROM todos WHERE id = ?',
-    args: [id],
+    sql: 'DELETE FROM todos WHERE id = ? AND user_id = ?',
+    args: [id, user_id],
   })
   return result.rowsAffected > 0
 }
 
 // ========== Project CRUD Functions ==========
 
-export async function getAllProjects(): Promise<Project[]> {
+export async function getAllProjects(user_id: string): Promise<Project[]> {
   await ensureInitialized()
   const client = getClient()
-  const result = await client.execute('SELECT * FROM projects ORDER BY created_at ASC')
+  const result = await client.execute({
+    sql: 'SELECT * FROM projects WHERE user_id = ? ORDER BY created_at ASC',
+    args: [user_id],
+  })
   return result.rows.map(rowToProject)
 }
 
-export async function createProject(name: string, description: string | null = null): Promise<Project> {
+export async function createProject(
+  name: string,
+  user_id: string,
+  description: string | null = null
+): Promise<Project> {
   await ensureInitialized()
   const client = getClient()
   const id = randomUUID()
   const result = await client.execute({
-    sql: 'INSERT INTO projects (id, name, description) VALUES (?, ?, ?) RETURNING *',
-    args: [id, name, description],
+    sql: 'INSERT INTO projects (id, name, description, user_id) VALUES (?, ?, ?, ?) RETURNING *',
+    args: [id, name, description, user_id],
   })
   return rowToProject(result.rows[0])
 }
 
 export async function updateProject(
   id: string,
+  user_id: string,
   name: string,
   description: string | null = null
 ): Promise<Project | null> {
   await ensureInitialized()
   const client = getClient()
   const result = await client.execute({
-    sql: 'UPDATE projects SET name = ?, description = ? WHERE id = ? RETURNING *',
-    args: [name, description, id],
+    sql: 'UPDATE projects SET name = ?, description = ? WHERE id = ? AND user_id = ? RETURNING *',
+    args: [name, description, id, user_id],
   })
   return result.rows.length > 0 ? rowToProject(result.rows[0]) : null
 }
 
-export async function deleteProject(id: string): Promise<boolean> {
+export async function deleteProject(id: string, user_id: string): Promise<boolean> {
   await ensureInitialized()
   const client = getClient()
   const result = await client.execute({
-    sql: 'DELETE FROM projects WHERE id = ?',
-    args: [id],
+    sql: 'DELETE FROM projects WHERE id = ? AND user_id = ?',
+    args: [id, user_id],
   })
   return result.rowsAffected > 0
 }
 
-export async function getTodosByProject(project_id: string): Promise<Todo[]> {
+export async function getTodosByProject(project_id: string, user_id: string): Promise<Todo[]> {
   await ensureInitialized()
   const client = getClient()
   const result = await client.execute({
-    sql: 'SELECT * FROM todos WHERE project_id = ? ORDER BY created_at ASC',
-    args: [project_id],
+    sql: 'SELECT * FROM todos WHERE project_id = ? AND user_id = ? ORDER BY created_at ASC',
+    args: [project_id, user_id],
   })
   return result.rows.map(rowToTodo)
 }

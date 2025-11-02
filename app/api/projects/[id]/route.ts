@@ -1,11 +1,21 @@
 import { NextResponse } from 'next/server'
 import { updateProject, deleteProject } from '@/lib/db'
+import { auth } from '@/auth'
 
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = await auth()
+
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
     const { name, description } = await request.json()
     const { id } = await params
 
@@ -16,7 +26,7 @@ export async function PUT(
       )
     }
 
-    const project = await updateProject(id, name, description || null)
+    const project = await updateProject(id, session.user.id, name, description || null)
 
     if (!project) {
       return NextResponse.json(
@@ -40,9 +50,18 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = await auth()
+
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
     const { id } = await params
 
-    const success = await deleteProject(id)
+    const success = await deleteProject(id, session.user.id)
 
     if (!success) {
       return NextResponse.json(
