@@ -27,9 +27,8 @@ Lockplane Todos is a modern todo list application built with:
 - [ ] Run tests (when implemented): `npm test`
 
 ### Phase 3: Schema Changes (If Applicable)
-- [ ] Edit schema file in `schema/todos.lp.sql`
-- [ ] Validate schema: `lockplane validate sql schema/`
-- [ ] Apply to database: `lockplane apply --auto-approve --from $TURSO_DATABASE_URL --to schema/`
+- [ ] Update schema file in `schema/todos.lp.sql`
+- [ ] Use the Lockplane skill to validate and apply changes
 - [ ] Verify migration succeeded
 - [ ] Stage schema changes: `git add schema/`
 
@@ -67,30 +66,7 @@ Lockplane Todos is a modern todo list application built with:
 
 ## Database Schema
 
-This project uses [Lockplane](https://lockplane.com) for database schema management.
-
-### Lockplane Workflow
-
-Schema is defined declaratively in `schema/todos.lp.sql` and applied using Lockplane CLI:
-
-```bash
-# Validate schema syntax
-lockplane validate sql schema/
-
-# Apply schema to database (tests on shadow DB first)
-lockplane apply --auto-approve --from $TURSO_DATABASE_URL --to schema/
-```
-
-### Schema Requirements
-
-Declarative `.lp.sql` files must follow these rules:
-- ✅ Use standard DDL: `CREATE TABLE`, `CREATE INDEX`, `ALTER TABLE ADD COLUMN`
-- ❌ No `CREATE OR REPLACE` statements
-- ❌ No `DROP` statements (use Lockplane migrations instead)
-- ❌ No transaction control (`BEGIN`, `COMMIT`, `ROLLBACK`)
-- ❌ No conditional clauses (`IF EXISTS`, `IF NOT EXISTS`)
-
-Lockplane validates these rules automatically and tests migrations on a shadow database before applying to production.
+Schema is managed using Lockplane in `schema/todos.lp.sql`. Use the Lockplane skill for schema operations.
 
 ## Development Workflow
 
@@ -110,8 +86,7 @@ The checklist ensures:
 # Install dependencies
 npm install
 
-# Apply database schema with Lockplane
-lockplane apply --auto-approve --from $TURSO_DATABASE_URL --to schema/
+# Apply schema using Lockplane skill
 
 # Start dev server
 npm run dev
@@ -154,7 +129,7 @@ npm run lint
 
 This app uses Turso (libSQL/SQLite) for both local and production:
 - **Client**: @libsql/client (async)
-- **Schema**: Managed by Lockplane (see Database Schema section above)
+- **Schema**: Managed with Lockplane (see Lockplane skill)
 - **Lazy Loading**: Database client is created on-demand to support serverless
 - **Environment Variables**:
   - `TURSO_DATABASE_URL` - Database connection URL
@@ -168,13 +143,7 @@ This app uses Turso (libSQL/SQLite) for both local and production:
 4. Get credentials: `turso db show your-db-name`
 5. Add to `.env.local` for local development
 6. Add to Vercel environment variables for production
-
-### Setting up Lockplane
-
-1. Install Lockplane CLI: `npm install -g lockplane` or use npx
-2. Set database URL: `export TURSO_DATABASE_URL="libsql://..."`
-3. Apply initial schema: `lockplane apply --auto-approve --from $TURSO_DATABASE_URL --to schema/`
-4. For future changes, edit `schema/todos.lp.sql` and re-run `lockplane apply`
+7. Apply schema using Lockplane skill
 
 ## Git Workflow
 
@@ -193,7 +162,7 @@ This app uses Turso (libSQL/SQLite) for both local and production:
   - `app/page.tsx` - Homepage (client component)
 - `lib/` - Utility libraries
   - `lib/db.ts` - Turso/libSQL database client and functions
-- `schema/` - Database schema definitions (managed by Lockplane)
+- `schema/` - Database schema definitions
 - `public/` - Static assets
 - `next.config.js` - Next.js configuration
 - `tsconfig.json` - TypeScript configuration
@@ -211,14 +180,13 @@ This app uses Turso (libSQL/SQLite) for both local and production:
 
 ### Adding a New Database Column
 
-1. Update `schema/todos.lp.sql` with the new column in the CREATE TABLE statement
-2. Validate schema: `lockplane validate sql schema/`
-3. Apply to database: `lockplane apply --auto-approve --from $TURSO_DATABASE_URL --to schema/`
-4. Update TypeScript types in `lib/db.ts`
-5. Update API routes to handle the new column
-6. Update React components using that data
-7. Build and test: `npm run build`
-8. **Follow the complete checklist above**
+1. Update the CREATE TABLE statement in `schema/todos.lp.sql`
+2. Use Lockplane skill to validate and apply changes
+3. Update TypeScript types if needed
+4. Update API routes to handle the new column
+5. Update React components using that data
+6. Build and test: `npm run build`
+7. **Follow the complete checklist above**
 
 ### Fixing a Bug
 
@@ -271,5 +239,5 @@ This is not optional. The checklist ensures:
 
 See:
 - `README.md` - Setup and deployment instructions
-- `schema/` - Database schema definitions
-- [Lockplane Docs](https://lockplane.com/docs) - Schema management guide
+- `schema/todos.lp.sql` - Database schema
+- Lockplane skill - Schema management

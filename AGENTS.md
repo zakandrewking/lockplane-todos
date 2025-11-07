@@ -27,10 +27,10 @@ Lockplane Todos is a modern todo list application built with:
 - [ ] Run tests (when implemented): `npm test`
 
 ### Phase 3: Schema Changes (If Applicable)
-- [ ] Edit schema file in `schema/` directory
-- [ ] Run `lockplane migrate` to generate and apply migrations
+- [ ] Update schema file in `schema/todos.lp.sql`
+- [ ] Use the Lockplane skill to validate and apply changes
 - [ ] Verify migration succeeded
-- [ ] Stage migration files: `git add schema/ migrations/`
+- [ ] Stage schema changes: `git add schema/`
 
 ### Phase 4: Documentation (CRITICAL - DO NOT SKIP)
 - [ ] Update `README.md` with usage changes or new features
@@ -66,18 +66,7 @@ Lockplane Todos is a modern todo list application built with:
 
 ## Database Schema
 
-The database schema is currently defined manually in `lib/db.ts` using SQLite.
-
-### Future: Lockplane Integration
-
-This project plans to use [Lockplane](https://lockplane.com) for database schema management when migrating to a hosted database (Postgres or hosted SQLite like Turso).
-
-For now:
-- Schema is initialized in `lib/db.ts`
-- Preferred declarative schema lives in `schema/todos.lp.sql` (with `schema/todos.json` retained only for legacy tooling)
-- When ready to migrate, use Lockplane to apply the schema
-
-Declarative `.lp.sql` files should stay free of imperative changes: avoid `CREATE OR REPLACE`, `DROP` statements, explicit transaction control, or conditional clauses such as `IF (NOT) EXISTS`. After editing any schema files, run `npm test` to execute the `.lp.sql` validator tests.
+Schema is managed using Lockplane in `schema/todos.lp.sql`. Use the Lockplane skill for schema operations.
 
 ## Development Workflow
 
@@ -170,7 +159,7 @@ This app uses Turso (libSQL/SQLite) for both local and production:
   - `app/page.tsx` - Homepage (client component)
 - `lib/` - Utility libraries
   - `lib/db.ts` - Turso/libSQL database client and functions
-- `schema/` - Database schema definitions (for future Lockplane migration)
+- `schema/` - Database schema definitions
 - `public/` - Static assets
 - `next.config.js` - Next.js configuration
 - `tsconfig.json` - TypeScript configuration
@@ -188,14 +177,13 @@ This app uses Turso (libSQL/SQLite) for both local and production:
 
 ### Adding a New Database Column
 
-1. Update the schema in `lib/db.ts` (ALTER TABLE or recreate)
-2. Update `schema/todos.lp.sql` to reflect the new column (avoid `CREATE OR REPLACE`, `DROP`, or conditional clauses)
-3. Update TypeScript types in `lib/db.ts`
+1. Update the CREATE TABLE statement in `schema/todos.lp.sql`
+2. Use Lockplane skill to validate and apply changes
+3. Update TypeScript types if needed
 4. Update API routes to handle the new column
 5. Update React components using that data
 6. Build and test: `npm run build`
-7. Validate schema files: `npm test`
-8. **Follow the complete checklist above**
+7. **Follow the complete checklist above**
 
 ### Fixing a Bug
 
@@ -248,5 +236,5 @@ This is not optional. The checklist ensures:
 
 See:
 - `README.md` - Setup and deployment instructions
-- `schema/` - Database schema definitions
-- [Lockplane Docs](https://lockplane.com/docs) - Schema management guide
+- `schema/todos.lp.sql` - Database schema
+- Lockplane skill - Schema management
