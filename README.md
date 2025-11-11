@@ -63,16 +63,17 @@ A modern, beautiful todo list application built with Next.js, TypeScript, and Tu
 
 4. **Configure environment variables**
 
-   Create a `.env.local` file:
+   Create a `.env.local` file (or copy from `.env.example`):
+   
+   For local development with SQLite:
    ```bash
-   DATABASE_URL=your_database_url_here
-   LIBSQL_DB_TOKEN=your_auth_token_here
+   SQLITE_DB_PATH=schema/lockplane.db
    ```
    
-   Or for local development with SQLite:
+   Or for remote Turso database:
    ```bash
-   DATABASE_URL=file:./todos.db
-   # LIBSQL_DB_TOKEN not needed for local files
+   DATABASE_URL=libsql://your-db-name.turso.io
+   LIBSQL_DB_TOKEN=your_auth_token_here
    ```
 
 5. **Install Lockplane CLI**

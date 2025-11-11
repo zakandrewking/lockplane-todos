@@ -11,8 +11,19 @@ envFile.split('\n').forEach(line => {
   }
 });
 
+// Support SQLITE_DB_PATH (plain file path) or DATABASE_URL (full URL)
+let url;
+if (env.SQLITE_DB_PATH) {
+  url = `file:${env.SQLITE_DB_PATH}`;
+} else if (env.DATABASE_URL) {
+  url = env.DATABASE_URL;
+} else {
+  console.error('❌ Error: Either SQLITE_DB_PATH or DATABASE_URL must be set');
+  process.exit(1);
+}
+
 const client = createClient({
-  url: env.DATABASE_URL,
+  url,
   authToken: env.LIBSQL_DB_TOKEN
 });
 
