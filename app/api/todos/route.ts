@@ -16,7 +16,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const { text, project_id } = await request.json()
+    const { text, project_id, notes } = await request.json()
 
     if (!text || text.trim() === '') {
       return NextResponse.json(
@@ -25,7 +25,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const todo = await createTodo(text, project_id || null)
+    const todo = await createTodo(text, project_id || null, notes || null)
     return NextResponse.json({ todo }, { status: 201 })
   } catch (error) {
     console.error('Error creating todo:', error)

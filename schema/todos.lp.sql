@@ -41,6 +41,7 @@ CREATE TABLE todos(
   id text PRIMARY KEY,
   text text NOT NULL,
   completed integer NOT NULL DEFAULT 0,
+  notes text,
   project_id text,
   user_id text NOT NULL,
   created_at text NOT NULL,

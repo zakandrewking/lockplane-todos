@@ -49,6 +49,7 @@ export type Todo = {
   id: string;
   text: string;
   completed: boolean;
+  notes: string | null;
   project_id: string | null;
   user_id: string;
   created_at: string;
@@ -71,6 +72,7 @@ function rowToTodo(row: any): Todo {
     id: row.id as string,
     text: row.text as string,
     completed: Boolean(row.completed),
+    notes: row.notes as string | null,
     project_id: row.project_id as string | null,
     user_id: row.user_id as string,
     created_at: row.created_at as string,
@@ -89,6 +91,7 @@ export async function getAllTodos(): Promise<Todo[]> {
 export async function createTodo(
   text: string,
   project_id: string | null = null,
+  notes: string | null = null,
   user_id: string = 'default-user' // TODO: Replace with actual user_id from auth
 ): Promise<Todo> {
   await ensureInitialized();
@@ -96,21 +99,49 @@ export async function createTodo(
   const id = randomUUID();
   const created_at = new Date().toISOString();
   const result = await client.execute({
-    sql: "INSERT INTO todos (id, text, completed, project_id, user_id, created_at) VALUES (?, ?, 0, ?, ?, ?) RETURNING *",
-    args: [id, text, project_id, user_id, created_at],
+    sql: "INSERT INTO todos (id, text, completed, notes, project_id, user_id, created_at) VALUES (?, ?, 0, ?, ?, ?, ?) RETURNING *",
+    args: [id, text, notes, project_id, user_id, created_at],
   });
   return rowToTodo(result.rows[0]);
 }
 
 export async function updateTodo(
   id: string,
-  completed: boolean
+  completed?: boolean,
+  notes?: string | null
 ): Promise<Todo | null> {
   await ensureInitialized();
   const client = getClient();
+  
+  // Build dynamic update query based on provided fields
+  const updates: string[] = [];
+  const args: any[] = [];
+  
+  if (completed !== undefined) {
+    updates.push('completed = ?');
+    args.push(completed ? 1 : 0);
+  }
+  
+  if (notes !== undefined) {
+    updates.push('notes = ?');
+    args.push(notes);
+  }
+  
+  if (updates.length === 0) {
+    // No updates provided, just return the existing todo
+    const result = await client.execute({
+      sql: "SELECT * FROM todos WHERE id = ?",
+      args: [id],
+    });
+    return result.rows.length > 0 ? rowToTodo(result.rows[0]) : null;
+  }
+  
+  args.push(id);
+  const sql = `UPDATE todos SET ${updates.join(', ')} WHERE id = ? RETURNING *`;
+  
   const result = await client.execute({
-    sql: "UPDATE todos SET completed = ? WHERE id = ? RETURNING *",
-    args: [completed ? 1 : 0, id],
+    sql,
+    args,
   });
   return result.rows.length > 0 ? rowToTodo(result.rows[0]) : null;
 }

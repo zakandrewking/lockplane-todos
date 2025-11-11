@@ -6,10 +6,14 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { completed } = await request.json()
+    const body = await request.json()
     const { id } = await params
+    
+    // Extract completed and notes from body, handling undefined values
+    const completed = body.completed !== undefined ? body.completed : undefined
+    const notes = body.notes !== undefined ? body.notes : undefined
 
-    const todo = await updateTodo(id, completed)
+    const todo = await updateTodo(id, completed, notes)
 
     if (!todo) {
       return NextResponse.json(

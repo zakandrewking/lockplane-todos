@@ -8,6 +8,8 @@ A modern, beautiful todo list application built with Next.js, TypeScript, and Tu
 
 - **Projects**: Organize todos into projects with a beautiful sidebar
 - **Todo Management**: Add, complete, and delete todos
+- **Rich Text Notes**: Add formatted notes to any todo with bold, italic, underline, and lists
+- **Expandable Todos**: Click the note icon to view and edit rich text notes for each todo
 - **Smart Filtering**: Filter todos by project, all, active, or completed
 - **Project Filtering**: View todos by specific project or all todos
 - **Bulk Actions**: Clear all completed todos at once
@@ -180,8 +182,8 @@ lockplane-todos/
 
 ### Todos
 - `GET /api/todos` - Fetch all todos
-- `POST /api/todos` - Create a new todo (accepts `text` and optional `project_id`)
-- `PUT /api/todos/[id]` - Update a todo (toggle completed)
+- `POST /api/todos` - Create a new todo (accepts `text`, optional `project_id`, and optional `notes`)
+- `PUT /api/todos/[id]` - Update a todo (accepts `completed` and/or `notes`)
 - `DELETE /api/todos/[id]` - Delete a todo
 
 ### Projects
@@ -245,6 +247,7 @@ CREATE TABLE todos (
   id TEXT PRIMARY KEY,
   text TEXT NOT NULL,
   completed INTEGER NOT NULL DEFAULT 0,
+  notes TEXT,
   project_id TEXT,
   user_id TEXT NOT NULL,
   created_at TEXT NOT NULL,
@@ -269,6 +272,7 @@ The UI includes a projects sidebar for easy project management and todo organiza
 - [x] Add projects schema and database layer ✅
 - [x] Add projects API routes and UI ✅
 - [x] Integrate Lockplane for schema management ✅
+- [x] Add rich text notes for todos ✅
 - [ ] Add user authentication
 - [ ] Add due dates and reminders
 - [ ] Add priority levels

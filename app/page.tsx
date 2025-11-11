@@ -13,6 +13,7 @@ type Todo = {
   id: string
   text: string
   completed: boolean
+  notes: string | null
   project_id: string | null
   created_at: string
 }
@@ -26,6 +27,8 @@ export default function Home() {
   const [newProjectName, setNewProjectName] = useState('')
   const [showProjectForm, setShowProjectForm] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [expandedTodoId, setExpandedTodoId] = useState<string | null>(null)
+  const [editingNotesId, setEditingNotesId] = useState<string | null>(null)
 
   // Fetch todos and projects on mount
   useEffect(() => {
@@ -112,6 +115,32 @@ export default function Home() {
       setTodos((current) => current.filter((todo) => todo.id !== id))
     } catch (error) {
       console.error('Error deleting todo:', error)
+    }
+  }
+
+  const updateTodoNotes = async (id: string, notes: string | null) => {
+    try {
+      const response = await fetch(`/api/todos/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notes }),
+      })
+
+      if (!response.ok) throw new Error('Failed to update notes')
+
+      const data = await response.json()
+      setTodos((current) =>
+        current.map((todo) => (todo.id === id ? data.todo : todo))
+      )
+    } catch (error) {
+      console.error('Error updating notes:', error)
+    }
+  }
+
+  const toggleTodoExpanded = (id: string) => {
+    setExpandedTodoId(expandedTodoId === id ? null : id)
+    if (editingNotesId === id) {
+      setEditingNotesId(null)
     }
   }
 
@@ -341,27 +370,133 @@ export default function Home() {
                   {filter === 'completed' && 'No completed todos yet.'}
                 </li>
               ) : (
-                filteredTodos.map((todo) => (
-                  <li
-                    key={todo.id}
-                    className={`todo-item ${todo.completed ? 'completed' : ''}`}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={todo.completed}
-                      onChange={() => toggleTodo(todo.id, todo.completed)}
-                      className="todo-checkbox"
-                    />
-                    <span className="todo-text">{todo.text}</span>
-                    <button
-                      onClick={() => deleteTodo(todo.id)}
-                      className="delete-button"
-                      aria-label="Delete todo"
+                filteredTodos.map((todo) => {
+                  const isExpanded = expandedTodoId === todo.id
+                  const isEditingNotes = editingNotesId === todo.id
+                  
+                  return (
+                    <li
+                      key={todo.id}
+                      className={`todo-item-wrapper ${isExpanded ? 'expanded' : ''}`}
                     >
-                      ×
-                    </button>
-                  </li>
-                ))
+                      <div className={`todo-item ${todo.completed ? 'completed' : ''}`}>
+                        <input
+                          type="checkbox"
+                          checked={todo.completed}
+                          onChange={() => toggleTodo(todo.id, todo.completed)}
+                          className="todo-checkbox"
+                        />
+                        <span className="todo-text">{todo.text}</span>
+                        <button
+                          onClick={() => toggleTodoExpanded(todo.id)}
+                          className="notes-toggle-button"
+                          aria-label="Toggle notes"
+                          title={isExpanded ? 'Hide notes' : 'Show notes'}
+                        >
+                          {todo.notes ? '📝' : '📄'}
+                        </button>
+                        <button
+                          onClick={() => deleteTodo(todo.id)}
+                          className="delete-button"
+                          aria-label="Delete todo"
+                        >
+                          ×
+                        </button>
+                      </div>
+                      
+                      {isExpanded && (
+                        <div className="todo-notes-section">
+                          {isEditingNotes ? (
+                            <div className="notes-editor">
+                              <div className="notes-toolbar">
+                                <button
+                                  onClick={() => document.execCommand('bold')}
+                                  className="toolbar-btn"
+                                  title="Bold"
+                                  type="button"
+                                >
+                                  <strong>B</strong>
+                                </button>
+                                <button
+                                  onClick={() => document.execCommand('italic')}
+                                  className="toolbar-btn"
+                                  title="Italic"
+                                  type="button"
+                                >
+                                  <em>I</em>
+                                </button>
+                                <button
+                                  onClick={() => document.execCommand('underline')}
+                                  className="toolbar-btn"
+                                  title="Underline"
+                                  type="button"
+                                >
+                                  <u>U</u>
+                                </button>
+                                <button
+                                  onClick={() => document.execCommand('insertUnorderedList')}
+                                  className="toolbar-btn"
+                                  title="Bullet list"
+                                  type="button"
+                                >
+                                  •
+                                </button>
+                              </div>
+                              <div
+                                contentEditable
+                                className="notes-input"
+                                dangerouslySetInnerHTML={{ __html: todo.notes || '' }}
+                                onBlur={(e) => {
+                                  const content = e.currentTarget.innerHTML
+                                  updateTodoNotes(todo.id, content || null)
+                                  setEditingNotesId(null)
+                                }}
+                                suppressContentEditableWarning
+                              />
+                              <div className="notes-actions">
+                                <button
+                                  onClick={() => {
+                                    const editor = document.querySelector(`[contenteditable="true"]`) as HTMLElement
+                                    if (editor) {
+                                      updateTodoNotes(todo.id, editor.innerHTML || null)
+                                    }
+                                    setEditingNotesId(null)
+                                  }}
+                                  className="btn-primary"
+                                >
+                                  Save
+                                </button>
+                                <button
+                                  onClick={() => setEditingNotesId(null)}
+                                  className="btn-secondary"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="notes-display">
+                              {todo.notes ? (
+                                <div
+                                  className="notes-content"
+                                  dangerouslySetInnerHTML={{ __html: todo.notes }}
+                                />
+                              ) : (
+                                <p className="notes-empty">No notes yet. Click Edit to add notes.</p>
+                              )}
+                              <button
+                                onClick={() => setEditingNotesId(todo.id)}
+                                className="btn-primary"
+                              >
+                                Edit Notes
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </li>
+                  )
+                })
               )}
             </ul>
 
