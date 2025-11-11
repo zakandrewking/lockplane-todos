@@ -65,8 +65,12 @@ A modern, beautiful todo list application built with Next.js, TypeScript, and Tu
 
    Create a `.env.local` file:
    ```bash
-   TURSO_DATABASE_URL=your_database_url_here
-   TURSO_AUTH_TOKEN=your_auth_token_here
+   DATABASE_URL=your_database_url_here?authToken=your_auth_token_here
+   ```
+   
+   Or for local development with SQLite:
+   ```bash
+   DATABASE_URL=file:./todos.db
    ```
 
 5. **Install Lockplane CLI**
@@ -81,7 +85,7 @@ A modern, beautiful todo list application built with Next.js, TypeScript, and Tu
 
    Or use Lockplane directly:
    ```bash
-   lockplane apply --auto-approve --from $TURSO_DATABASE_URL --to schema/
+   lockplane apply --auto-approve --from $DATABASE_URL --to schema/
    ```
 
 7. **Start the development server**
@@ -117,13 +121,12 @@ npm start
    - Import your GitHub repository: `zakandrewking/lockplane-todos`
    - Vercel will install the GitHub app and configure webhooks
 
-2. **Add Turso environment variables to Vercel**
+2. **Add database environment variable to Vercel**
    - In Vercel dashboard, go to Settings → Environment Variables
-   - Add `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN`
+   - Add `DATABASE_URL` with your Turso connection string (include authToken as query parameter)
    - Or use the CLI:
    ```bash
-   echo "your_database_url" | vercel env add TURSO_DATABASE_URL production
-   echo "your_auth_token" | vercel env add TURSO_AUTH_TOKEN production
+   echo "your_database_url?authToken=your_token" | vercel env add DATABASE_URL production
    ```
 
 3. **Trigger initial deployment**

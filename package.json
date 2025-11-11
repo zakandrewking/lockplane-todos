@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint .",
     "schema:validate": "lockplane validate sql schema/",
-    "schema:apply": "lockplane apply --auto-approve --from \"$TURSO_DATABASE_URL\" --to schema/"
+    "schema:apply": "lockplane apply --auto-approve --from \"$DATABASE_URL\" --to schema/"
   },
   "dependencies": {
     "@libsql/client": "^0.15.15",

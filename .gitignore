@@ -49,3 +49,8 @@ lerna-debug.log*
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
+
+# Lockplane environment files (added by lockplane init)
+# DO NOT remove - contains database credentials
+.env.*
+!.env.*.example
