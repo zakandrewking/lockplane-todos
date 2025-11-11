@@ -11,27 +11,9 @@ envFile.split('\n').forEach(line => {
   }
 });
 
-// Parse DATABASE_URL to extract auth token if present
-const databaseUrl = env.DATABASE_URL;
-let url = databaseUrl;
-let authToken;
-
-try {
-  const parsedUrl = new URL(databaseUrl);
-  const tokenFromUrl = parsedUrl.searchParams.get('authToken');
-  
-  if (tokenFromUrl) {
-    authToken = tokenFromUrl;
-    parsedUrl.searchParams.delete('authToken');
-    url = parsedUrl.toString();
-  }
-} catch (e) {
-  // Not a valid URL (e.g., file:./todos.db), use as-is
-}
-
 const client = createClient({
-  url,
-  authToken
+  url: env.DATABASE_URL,
+  authToken: env.LIBSQL_DB_TOKEN
 });
 
 (async () => {

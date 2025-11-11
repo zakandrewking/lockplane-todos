@@ -129,8 +129,9 @@ This app uses Turso (libSQL/SQLite) for both local and production:
 - **Client**: @libsql/client (async)
 - **Schema**: Auto-initialized on first request in `lib/db.ts`
 - **Lazy Loading**: Database client is created on-demand to support serverless
-- **Environment Variable**:
-  - `DATABASE_URL` - Database connection URL (can include authToken as query parameter)
+- **Environment Variables**:
+  - `DATABASE_URL` - Database connection URL
+  - `LIBSQL_DB_TOKEN` - Authentication token (optional for local files)
 
 ### Setting up Turso
 
@@ -197,7 +198,7 @@ This app uses Turso (libSQL/SQLite) for both local and production:
 
 1. **Forgetting to run `npm run build`** - This is the most common issue. Always build!
 2. **Not testing the build** - Errors might only show in production
-3. **Forgetting database environment variable** - Must set DATABASE_URL
+3. **Forgetting database environment variables** - Must set DATABASE_URL (and LIBSQL_DB_TOKEN for remote databases)
 4. **Forgetting to update docs** - Documentation must match code
 5. **Not committing or pushing** - Work isn't complete until it's pushed
 6. **Breaking TypeScript types** - Always fix type errors before committing

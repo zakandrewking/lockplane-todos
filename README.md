@@ -65,12 +65,14 @@ A modern, beautiful todo list application built with Next.js, TypeScript, and Tu
 
    Create a `.env.local` file:
    ```bash
-   DATABASE_URL=your_database_url_here?authToken=your_auth_token_here
+   DATABASE_URL=your_database_url_here
+   LIBSQL_DB_TOKEN=your_auth_token_here
    ```
    
    Or for local development with SQLite:
    ```bash
    DATABASE_URL=file:./todos.db
+   # LIBSQL_DB_TOKEN not needed for local files
    ```
 
 5. **Install Lockplane CLI**
@@ -121,12 +123,13 @@ npm start
    - Import your GitHub repository: `zakandrewking/lockplane-todos`
    - Vercel will install the GitHub app and configure webhooks
 
-2. **Add database environment variable to Vercel**
+2. **Add database environment variables to Vercel**
    - In Vercel dashboard, go to Settings → Environment Variables
-   - Add `DATABASE_URL` with your Turso connection string (include authToken as query parameter)
+   - Add `DATABASE_URL` and `LIBSQL_DB_TOKEN`
    - Or use the CLI:
    ```bash
-   echo "your_database_url?authToken=your_token" | vercel env add DATABASE_URL production
+   echo "your_database_url" | vercel env add DATABASE_URL production
+   echo "your_auth_token" | vercel env add LIBSQL_DB_TOKEN production
    ```
 
 3. **Trigger initial deployment**

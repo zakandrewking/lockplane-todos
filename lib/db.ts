@@ -6,30 +6,9 @@ let initPromise: Promise<void> | null = null
 
 function getClient(): Client {
   if (!db) {
-    const databaseUrl = process.env.DATABASE_URL!
-    
-    // Parse URL to extract auth token if present in query string
-    let url = databaseUrl
-    let authToken: string | undefined
-    
-    try {
-      const parsedUrl = new URL(databaseUrl)
-      const tokenFromUrl = parsedUrl.searchParams.get('authToken')
-      
-      if (tokenFromUrl) {
-        // Remove authToken from URL and use it separately
-        authToken = tokenFromUrl
-        parsedUrl.searchParams.delete('authToken')
-        url = parsedUrl.toString()
-      }
-    } catch (e) {
-      // Not a valid URL (e.g., file:./todos.db), use as-is
-      // This is fine for local SQLite files
-    }
-    
     db = createClient({
-      url,
-      authToken,
+      url: process.env.DATABASE_URL!,
+      authToken: process.env.LIBSQL_DB_TOKEN,
     })
   }
   return db
