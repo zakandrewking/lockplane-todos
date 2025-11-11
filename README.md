@@ -64,12 +64,12 @@ A modern, beautiful todo list application built with Next.js, TypeScript, and Tu
 4. **Configure environment variables**
 
    Create a `.env.local` file (or copy from `.env.example`):
-   
+
    For local development with SQLite:
    ```bash
    SQLITE_DB_PATH=schema/lockplane.db
    ```
-   
+
    Or for remote Turso database:
    ```bash
    DATABASE_URL=libsql://your-db-name.turso.io
@@ -192,7 +192,40 @@ lockplane-todos/
 
 ## Database Schema
 
-The application uses two tables:
+The application uses the following tables:
+
+### Users Table
+```sql
+CREATE TABLE users (
+  id TEXT PRIMARY KEY,
+  email TEXT NOT NULL UNIQUE,
+  created_at TEXT NOT NULL
+);
+```
+
+### Sessions Table
+```sql
+CREATE TABLE sessions (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  expires_at TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+```
+
+### Login Tokens Table
+```sql
+CREATE TABLE login_tokens (
+  token TEXT PRIMARY KEY,
+  user_id TEXT,
+  email TEXT NOT NULL,
+  expires_at TEXT NOT NULL,
+  used_at TEXT,
+  created_at TEXT NOT NULL,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+```
 
 ### Projects Table
 ```sql
@@ -200,7 +233,9 @@ CREATE TABLE projects (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
   description TEXT,
-  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  user_id TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 ```
 
@@ -211,8 +246,10 @@ CREATE TABLE todos (
   text TEXT NOT NULL,
   completed INTEGER NOT NULL DEFAULT 0,
   project_id TEXT,
-  created_at TEXT NOT NULL DEFAULT (datetime('now')),
-  FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE SET NULL
+  user_id TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE SET NULL,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 ```
 
@@ -221,6 +258,10 @@ CREATE TABLE todos (
 - Todos: `getAllTodos()`, `createTodo()`, `updateTodo()`, `deleteTodo()`
 
 The UI includes a projects sidebar for easy project management and todo organization.
+
+### Authentication Status
+
+⚠️ **Note**: The schema includes authentication tables (users, sessions, login_tokens) but authentication is not yet implemented. Currently, all todos and projects are created with a placeholder `user_id` of `'default-user'`. When authentication is implemented, this will need to be updated to use actual user IDs from the auth system.
 
 ## Future Enhancements
 

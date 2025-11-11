@@ -41,6 +41,7 @@ export type Project = {
   id: string;
   name: string;
   description: string | null;
+  user_id: string;
   created_at: string;
 };
 
@@ -49,6 +50,7 @@ export type Todo = {
   text: string;
   completed: boolean;
   project_id: string | null;
+  user_id: string;
   created_at: string;
 };
 
@@ -58,6 +60,7 @@ function rowToProject(row: any): Project {
     id: row.id as string,
     name: row.name as string,
     description: row.description as string | null,
+    user_id: row.user_id as string,
     created_at: row.created_at as string,
   };
 }
@@ -69,6 +72,7 @@ function rowToTodo(row: any): Todo {
     text: row.text as string,
     completed: Boolean(row.completed),
     project_id: row.project_id as string | null,
+    user_id: row.user_id as string,
     created_at: row.created_at as string,
   };
 }
@@ -84,14 +88,16 @@ export async function getAllTodos(): Promise<Todo[]> {
 
 export async function createTodo(
   text: string,
-  project_id: string | null = null
+  project_id: string | null = null,
+  user_id: string = 'default-user' // TODO: Replace with actual user_id from auth
 ): Promise<Todo> {
   await ensureInitialized();
   const client = getClient();
   const id = randomUUID();
+  const created_at = new Date().toISOString();
   const result = await client.execute({
-    sql: "INSERT INTO todos (id, text, completed, project_id) VALUES (?, ?, 0, ?) RETURNING *",
-    args: [id, text, project_id],
+    sql: "INSERT INTO todos (id, text, completed, project_id, user_id, created_at) VALUES (?, ?, 0, ?, ?, ?) RETURNING *",
+    args: [id, text, project_id, user_id, created_at],
   });
   return rowToTodo(result.rows[0]);
 }
@@ -132,14 +138,16 @@ export async function getAllProjects(): Promise<Project[]> {
 
 export async function createProject(
   name: string,
-  description: string | null = null
+  description: string | null = null,
+  user_id: string = 'default-user' // TODO: Replace with actual user_id from auth
 ): Promise<Project> {
   await ensureInitialized();
   const client = getClient();
   const id = randomUUID();
+  const created_at = new Date().toISOString();
   const result = await client.execute({
-    sql: "INSERT INTO projects (id, name, description) VALUES (?, ?, ?) RETURNING *",
-    args: [id, name, description],
+    sql: "INSERT INTO projects (id, name, description, user_id, created_at) VALUES (?, ?, ?, ?, ?) RETURNING *",
+    args: [id, name, description, user_id, created_at],
   });
   return rowToProject(result.rows[0]);
 }
